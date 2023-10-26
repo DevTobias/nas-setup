@@ -1,0 +1,77 @@
+version: "3"
+
+services:
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE}
+    networks:
+      - infrastructure_home-network
+    volumes:
+      - ${DOCKER_PATH}/jellyseerr/config:/app/config
+    labels:
+      # General configuration
+      traefik.enable: true
+      # Http configuration
+      traefik.http.routers.jellyseerr-http.entrypoints: web
+      traefik.http.routers.jellyseerr-http.rule: Host(`${JELLYSEERR_URL}`)
+      traefik.http.routers.jellyseerr-http.middlewares: jellyseerr-https
+      traefik.http.middlewares.jellyseerr-https.redirectscheme.scheme: https
+      # Https configuration
+      traefik.http.routers.jellyseerr.entrypoints: websecure
+      traefik.http.routers.jellyseerr.rule: Host(`${JELLYSEERR_URL}`)
+      traefik.http.routers.jellyseerr.tls: true
+
+  sonarr:
+    image: ghcr.io/hotio/sonarr
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${DOCKER_PATH}/sonarr/config:/config
+      - ${MEDIA_PATH}/media:/media
+    networks:
+      - infrastructure_home-network
+    labels:
+      # General configuration
+      traefik.enable: true
+      # Http configuration
+      traefik.http.routers.sonarr-http.entrypoints: web
+      traefik.http.routers.sonarr-http.rule: Host(`${SONARR_URL}`)
+      traefik.http.routers.sonarr-http.middlewares: sonarr-https
+      traefik.http.middlewares.sonarr-https.redirectscheme.scheme: https
+      # Https configuration
+      traefik.http.routers.sonarr.entrypoints: websecure
+      traefik.http.routers.sonarr.rule: Host(`${SONARR_URL}`)
+      traefik.http.routers.sonarr.tls: true
+
+  radarr:
+    image: ghcr.io/hotio/radarr
+    environment:
+      PUID: 1000
+      PGID: 1000
+      UMASK: 002
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${DOCKER_PATH}/radarr/config:/config
+      - ${MEDIA_PATH}/media:/media
+    networks:
+      - infrastructure_home-network
+    labels:
+      # General configuration
+      traefik.enable: true
+      # Http configuration
+      traefik.http.routers.radarr-http.entrypoints: web
+      traefik.http.routers.radarr-http.rule: Host(`${RADARR_URL}`)
+      traefik.http.routers.radarr-http.middlewares: radarr-https
+      traefik.http.middlewares.radarr-https.redirectscheme.scheme: https
+      # Https configuration
+      traefik.http.routers.radarr.entrypoints: websecure
+      traefik.http.routers.radarr.rule: Host(`${RADARR_URL}`)
+      traefik.http.routers.radarr.tls: true
+
+networks:
+  infrastructure_home-network:
+    external: true

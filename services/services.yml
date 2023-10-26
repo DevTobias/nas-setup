@@ -1,0 +1,99 @@
+version: "3"
+
+services:
+  homarr:
+    image: ghcr.io/ajnart/homarr:latest
+    restart: unless-stopped
+    volumes:
+      - ${DOCKER_PATH}/homarr/configs:/app/data/configs
+      - ${DOCKER_PATH}/homarr/icons:/app/public/icons
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      TZ: ${TIMEZONE}
+      EDIT_MODE_PASSWORD: ${NAS_PASSWORD}
+      BASE_URL: ${DASHBOARD_URL}
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+    networks:
+      - infrastructure_home-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:7575",
+        ]
+    labels:
+      # General configuration
+      traefik.enable: true
+      # Http configuration
+      traefik.http.routers.homarr-http.entrypoints: web
+      traefik.http.routers.homarr-http.rule: Host(`${DASHBOARD_URL}`)
+      traefik.http.routers.homarr-http.middlewares: homarr-https
+      traefik.http.middlewares.homarr-https.redirectscheme.scheme: https
+      # Https configuration
+      traefik.http.routers.homarr.entrypoints: websecure
+      traefik.http.routers.homarr.rule: Host(`${DASHBOARD_URL}`)
+      traefik.http.routers.homarr.tls: true
+
+  jellyfin:
+    image: jellyfin/jellyfin
+    restart: unless-stopped
+    volumes:
+      - ${DOCKER_PATH}/jellyfin/config:/config
+      - ${DOCKER_PATH}/jellyfin/cache:/cache
+      - ${MEDIA_PATH}/media:/media
+    ports:
+      - 7359:7359/udp
+      - 1900:1900/udp
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+    networks:
+      - infrastructure_home-network
+    labels:
+      # General configuration
+      traefik.enable: true
+      # Http configuration
+      traefik.http.routers.jellyfin-http.entrypoints: web
+      traefik.http.routers.jellyfin-http.rule: Host(`${JELLYFIN_URL}`)
+      traefik.http.routers.jellyfin-http.service: jellyfin-http-service
+      traefik.http.services.jellyfin-http-service.loadbalancer.server.port: 8096
+      # Https configuration
+      traefik.http.routers.jellyfin.entrypoints: websecure
+      traefik.http.routers.jellyfin.rule: Host(`${JELLYFIN_URL}`)
+      traefik.http.routers.jellyfin.service: jellyfin-https-service
+      traefik.http.services.jellyfin-https-service.loadbalancer.server.port: 8096
+      traefik.http.routers.jellyfin.tls: true
+
+  kavita:
+    image: kizaing/kavita:latest
+    restart: unless-stopped
+    volumes:
+      - ${MEDIA_PATH}/manga:/manga
+      - ${MEDIA_PATH}/comics:/comics
+      - ${MEDIA_PATH}/books:/books
+      - ${DOCKER_PATH}/kavita/data:/kavita/config
+    environment:
+      TZ: ${TIMEZONE}
+    networks:
+      - infrastructure_home-network
+    labels:
+      # General configuration
+      traefik.enable: true
+      # Http configuration
+      traefik.http.routers.kavita-http.entrypoints: web
+      traefik.http.routers.kavita-http.rule: Host(`${KAVITA_URL}`)
+      traefik.http.routers.kavita-http.middlewares: kavita-https
+      traefik.http.middlewares.kavita-https.redirectscheme.scheme: https
+      # Https configuration
+      traefik.http.routers.kavita.entrypoints: websecure
+      traefik.http.routers.kavita.rule: Host(`${KAVITA_URL}`)
+      traefik.http.routers.kavita.tls: true
+
+networks:
+  infrastructure_home-network:
+    external: true

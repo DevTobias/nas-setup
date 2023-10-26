@@ -1,0 +1,107 @@
+version: "3"
+
+services:
+  watchtower:
+    image: containrrr/watchtower:latest
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_SCHEDULE: "0 0 * * * *"
+      WATCHTOWER_CLEANUP: "true"
+      TZ: ${TIMEZONE}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - home-network
+
+  traefik:
+    image: traefik:latest
+    restart: unless-stopped
+    ports:
+      - 80:80/tcp
+      - 443:443/tcp
+    volumes:
+      - ${DOCKER_PATH}/traefik:/etc/traefik
+      - ${DOCKER_PATH}/traefik/certs:/certs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - home-network
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+    labels:
+      # General configuration
+      traefik.enable: true
+      # Http configuration
+      traefik.http.routers.dashboard-http.entrypoints: web
+      traefik.http.routers.dashboard-http.rule: Host(`${TRAEFIK_DASHBOARD_URL}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      traefik.http.routers.dashboard-http.middlewares: dashboard-https
+      traefik.http.middlewares.dashboard-https.redirectscheme.scheme: https
+      # Https configuration
+      traefik.http.routers.dashboard.entrypoints: websecure
+      traefik.http.routers.dashboard.rule: Host(`${TRAEFIK_DASHBOARD_URL}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      traefik.http.routers.dashboard.service: api@internal
+      traefik.http.routers.dashboard.tls: true
+
+  wireguard:
+    image: weejewel/wg-easy
+    restart: unless-stopped
+    environment:
+      WG_HOST: ${VPN_HOST}
+      PASSWORD: ${VPN_PASSWORD}
+    volumes:
+      - ${DOCKER_PATH}/wireguard:/etc/wireguard
+    ports:
+      - "51820:51820/udp"
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+    networks:
+      - home-network
+    labels:
+      # General configuration
+      traefik.enable: true
+      # Http configuration
+      traefik.http.routers.wireguard-http.entrypoints: web
+      traefik.http.routers.wireguard-http.rule: Host(`${WIREGUARD_URL}`)
+      traefik.http.routers.wireguard-http.middlewares: wireguard-https
+      traefik.http.middlewares.wireguard-https.redirectscheme.scheme: https
+      # Https configuration
+      traefik.http.routers.wireguard.entrypoints: websecure
+      traefik.http.routers.wireguard.rule: Host(`${WIREGUARD_URL}`)
+      traefik.http.routers.wireguard.service: wireguard-https-service
+      traefik.http.services.wireguard-https-service.loadbalancer.server.port: 51821
+      traefik.http.routers.wireguard.tls: true
+
+  pihole:
+    image: pihole/pihole:latest
+    restart: unless-stopped
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 67:67/udp
+    cap_add:
+      - NET_ADMIN
+    environment:
+      TZ: ${TIMEZONE}
+      WEBPASSWORD: ${LOCAL_IPV4}
+      FTLCONF_LOCAL_IPV4: ${PIHOLE_PASSWORD}
+      DNSMASQ_USER: "root"
+      DNSMASQ_LISTENING: "local"
+      VIRTUAL_HOST: ${PIHOLE_URL}
+      VIRTUAL_PORT: "80"
+    volumes:
+      - "${DOCKER_PATH}/pihole/data:/etc/pihole"
+      - "${DOCKER_PATH}/pihole/dnsmasq.d:/etc/dnsmasq.d"
+    networks:
+      - home-network
+    labels:
+      traefik.enable: true
+      traefik.http.routers.pihole.entrypoints: web, websecure
+      traefik.http.routers.pihole.rule: Host(`${PIHOLE_URL}`)
+      traefik.http.routers.pihole.tls: true
+
+networks:
+  home-network:
+    driver: bridge
