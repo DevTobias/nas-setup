@@ -1,0 +1,106 @@
+- name: Deploy docker services
+  docker_compose:
+    project_name: services
+    remove_orphans: true
+    definition:
+      version: "3"
+      services:
+        homarr:
+          image: ghcr.io/ajnart/homarr:latest
+          container_name: service_homarr
+          restart: unless-stopped
+          volumes:
+            - "{{ docker_path }}/homarr/configs:/app/data/configs"
+            - "{{ docker_path }}/homarr/icons:/app/public/icons"
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+          environment:
+            TZ: "{{ timezone }}"
+            EDIT_MODE_PASSWORD: "{{ homarr_password }}"
+            BASE_URL: "{{ homarr_host }}"
+            NODE_TLS_REJECT_UNAUTHORIZED: 0
+          networks:
+            - infrastructure_default
+          healthcheck:
+            test:
+              [
+                "CMD",
+                "wget",
+                "--no-verbose",
+                "--tries=1",
+                "--spider",
+                "http://localhost:7575",
+              ]
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.homarr-http.entrypoints: web
+            traefik.http.routers.homarr-http.rule: Host(`{{ homarr_host }}`)
+            traefik.http.routers.homarr-http.middlewares: homarr-https
+            traefik.http.middlewares.homarr-https.redirectscheme.scheme: https
+            # Https configuration
+            traefik.http.routers.homarr.entrypoints: websecure
+            traefik.http.routers.homarr.rule: Host(`{{ homarr_host }}`)
+            traefik.http.routers.homarr.tls: true
+
+        jellyfin:
+          image: jellyfin/jellyfin
+          container_name: service_jellyfin
+          restart: unless-stopped
+          volumes:
+            - "{{ docker_path }}/jellyfin/config:/config"
+            - "{{ docker_path }}/jellyfin/cache:/cache"
+            - "{{ media_path }}:/media"
+          ports:
+            - 7359:7359/udp
+            - 1900:1900/udp
+          environment:
+            PUID: 1000
+            PGID: 1000
+            TZ: "{{ timezone }}"
+          networks:
+            - infrastructure_default
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.jellyfin-http.entrypoints: web
+            traefik.http.routers.jellyfin-http.rule: Host(`{{ jellyfin_host }}`)
+            traefik.http.routers.jellyfin-http.service: jellyfin-http-service
+            traefik.http.services.jellyfin-http-service.loadbalancer.server.port: 8096
+            # Https configuration
+            traefik.http.routers.jellyfin.entrypoints: websecure
+            traefik.http.routers.jellyfin.rule: Host(`{{ jellyfin_host }}`)
+            traefik.http.routers.jellyfin.service: jellyfin-https-service
+            traefik.http.services.jellyfin-https-service.loadbalancer.server.port: 8096
+            traefik.http.routers.jellyfin.tls: true
+
+        kavita:
+          image: kizaing/kavita:latest
+          container_name: service_kavita
+          restart: unless-stopped
+          volumes:
+            - "{{ media_path }}/manga:/manga"
+            - "{{ media_path }}/comics:/comics"
+            - "{{ media_path }}/books:/books"
+            - "{{ docker_path }}/kavita/data:/kavita/config"
+          environment:
+            TZ: "{{ timezone }}"
+          networks:
+            - infrastructure_default
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.kavita-http.entrypoints: web
+            traefik.http.routers.kavita-http.rule: Host(`{{ kavita_host }}`)
+            traefik.http.routers.kavita-http.middlewares: kavita-https
+            traefik.http.middlewares.kavita-https.redirectscheme.scheme: https
+            # Https configuration
+            traefik.http.routers.kavita.entrypoints: websecure
+            traefik.http.routers.kavita.rule: Host(`{{ kavita_host }}`)
+            traefik.http.routers.kavita.tls: true
+
+      networks:
+        infrastructure_default:
+          external: true

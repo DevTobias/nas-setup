@@ -1,0 +1,24 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  test:
+    desc: Tests the connection to the nas
+    dir: ansible
+    cmds:
+      - ansible all -m ping
+
+  setup:
+    desc: Setups and configure the NAS
+    dir: ansible
+    cmds:
+      - ansible-playbook setup.yml
+
+  deploy:
+    desc: Runs ansible to (re)deploy the services
+    dir: ansible
+    cmds:
+      - ansible-playbook deploy.yml

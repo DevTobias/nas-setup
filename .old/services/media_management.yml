@@ -24,7 +24,7 @@ services:
       traefik.http.routers.jellyseerr.tls: true
 
   sonarr:
-    image: ghcr.io/hotio/sonarr
+    image: ghcr.io/hotio/sonarr:latest
     environment:
       PUID: 1000
       PGID: 1000
@@ -48,7 +48,7 @@ services:
       traefik.http.routers.sonarr.tls: true
 
   radarr:
-    image: ghcr.io/hotio/radarr
+    image: ghcr.io/hotio/radarr:latest
     environment:
       PUID: 1000
       PGID: 1000
@@ -71,6 +71,29 @@ services:
       traefik.http.routers.radarr.entrypoints: websecure
       traefik.http.routers.radarr.rule: Host(`${RADARR_URL}`)
       traefik.http.routers.radarr.tls: true
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${DOCKER_PATH}/prowlarr:/config
+    networks:
+      - infrastructure_home-network
+    labels:
+      # General configuration
+      traefik.enable: true
+      # Http configuration
+      traefik.http.routers.prowlarr-http.entrypoints: web
+      traefik.http.routers.prowlarr-http.rule: Host(`${PROWLARR_URL}`)
+      traefik.http.routers.prowlarr-http.middlewares: prowlarr-https
+      traefik.http.middlewares.prowlarr-https.redirectscheme.scheme: https
+      # Https configuration
+      traefik.http.routers.prowlarr.entrypoints: websecure
+      traefik.http.routers.prowlarr.rule: Host(`${PROWLARR_URL}`)
+      traefik.http.routers.prowlarr.tls: true
 
 networks:
   infrastructure_home-network:

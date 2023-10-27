@@ -1,0 +1,21 @@
+#!/usr/bin/env ansible-playbook
+
+- hosts: all
+  become: true
+
+  roles:
+    - role: _directories
+      tags:
+        - _directories
+
+    - role: infrastructure
+      tags:
+        - infrastructure
+
+    - role: services
+      tags:
+        - services
+
+    - role: media_management
+      tags:
+        - media_management

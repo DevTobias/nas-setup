@@ -1,0 +1,45 @@
+# Traefik configuration
+
+- name: Create the traefik directory
+  file:
+    path: "{{ docker_path }}/traefik/certificates"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+
+- name: Copy traefik.yaml file
+  template:
+    src: traefik.yml.j2
+    dest: "{{ docker_path }}/traefik/traefik.yml"
+
+- name: Copy certificate
+  ansible.builtin.copy:
+    src: ../files/certificates/
+    dest: "{{ docker_path }}/traefik/certificates/"
+
+# Prowlarr configuration
+
+- name: Create the prowlarr directory
+  file:
+    path: "{{ docker_path }}/prowlarr"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+
+# SABnzbd configuration
+
+- name: Create the SABnzbd config directory
+  file:
+    path: "{{ docker_path }}/sabnzbd/config"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+
+- name: Create the SABnzbd downloads directory
+  file:
+    path: "{{ docker_path }}/sabnzbd/downloads"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+
+- name: Create the SABnzbd incomplete directory
+  file:
+    path: "{{ docker_path }}/sabnzbd/incomplete"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"

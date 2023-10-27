@@ -1,0 +1,137 @@
+- name: Deploy docker media management
+  docker_compose:
+    project_name: media_management
+    remove_orphans: true
+    definition:
+      version: "3"
+      services:
+        jellyseerr:
+          image: fallenbagel/jellyseerr:latest
+          container_name: media_management_jellyseerr
+          restart: unless-stopped
+          environment:
+            TZ: "{{ timezone }}"
+          networks:
+            - infrastructure_default
+          volumes:
+            - "{{ docker_path }}/jellyseerr/config:/app/config"
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.jellyseerr-http.entrypoints: web
+            traefik.http.routers.jellyseerr-http.rule: Host(`{{ jellyseerr_host }}`)
+            traefik.http.routers.jellyseerr-http.middlewares: jellyseerr-https
+            traefik.http.middlewares.jellyseerr-https.redirectscheme.scheme: https
+            # Https configuration
+            traefik.http.routers.jellyseerr.entrypoints: websecure
+            traefik.http.routers.jellyseerr.rule: Host(`{{ jellyseerr_host }}`)
+            traefik.http.routers.jellyseerr.tls: true
+
+        sonarr:
+          image: ghcr.io/hotio/sonarr:latest
+          container_name: media_management_sonarr
+          restart: unless-stopped
+          environment:
+            TZ: "{{ timezone }}"
+            PUID: 1000
+            PGID: 1000
+          volumes:
+            - "{{ docker_path }}/sonarr/config:/config"
+            - "{{ media_path }}:/media"
+          networks:
+            - infrastructure_default
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.sonarr-http.entrypoints: web
+            traefik.http.routers.sonarr-http.rule: Host(`{{ sonarr_host }}`)
+            traefik.http.routers.sonarr-http.middlewares: sonarr-https
+            traefik.http.middlewares.sonarr-https.redirectscheme.scheme: https
+            # Https configuration
+            traefik.http.routers.sonarr.entrypoints: websecure
+            traefik.http.routers.sonarr.rule: Host(`{{ sonarr_host }}`)
+            traefik.http.routers.sonarr.tls: true
+
+        radarr:
+          image: ghcr.io/hotio/radarr:latest
+          container_name: media_management_radarr
+          restart: unless-stopped
+          environment:
+            TZ: "{{ timezone }}"
+            PUID: 1000
+            PGID: 1000
+          volumes:
+            - "{{ docker_path }}/radarr/config:/config"
+            - "{{ media_path }}:/media"
+          networks:
+            - infrastructure_default
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.radarr-http.entrypoints: web
+            traefik.http.routers.radarr-http.rule: Host(`{{ radarr_host }}`)
+            traefik.http.routers.radarr-http.middlewares: radarr-https
+            traefik.http.middlewares.radarr-https.redirectscheme.scheme: https
+            # Https configuration
+            traefik.http.routers.radarr.entrypoints: websecure
+            traefik.http.routers.radarr.rule: Host(`{{ radarr_host }}`)
+            traefik.http.routers.radarr.tls: true
+
+        prowlarr:
+          image: lscr.io/linuxserver/prowlarr:latest
+          container_name: media_management_prowlarr
+          restart: unless-stopped
+          environment:
+            TZ: "{{ timezone }}"
+            PUID: 1000
+            PGID: 1000
+          volumes:
+            - "{{ docker_path }}/prowlarr:/config"
+          networks:
+            - infrastructure_default
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.prowlarr-http.entrypoints: web
+            traefik.http.routers.prowlarr-http.rule: Host(`{{ prowlarr_host }}`)
+            traefik.http.routers.prowlarr-http.middlewares: prowlarr-https
+            traefik.http.middlewares.prowlarr-https.redirectscheme.scheme: https
+            # Https configuration
+            traefik.http.routers.prowlarr.entrypoints: websecure
+            traefik.http.routers.prowlarr.rule: Host(`{{ prowlarr_host }}`)
+            traefik.http.routers.prowlarr.tls: true
+
+        sabnzbd:
+          image: lscr.io/linuxserver/sabnzbd:latest
+          container_name: media_management_sabnzbd
+          environment:
+            TZ: "{{ timezone }}"
+            PUID: 1000
+            PGID: 1000
+          volumes:
+            - "{{ docker_path }}/sabnzbd/config:/config"
+            - "{{ docker_path }}/sabnzbd/downloads:/downloads"
+            - "{{ docker_path }}/sabnzbd/incomplete:/incomplete-downloads"
+            - "{{ media_path }}:/media"
+          networks:
+            - infrastructure_default
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.sabnzbd-http.entrypoints: web
+            traefik.http.routers.sabnzbd-http.rule: Host(`{{ sabnzbd_host }}`)
+            traefik.http.routers.sabnzbd-http.middlewares: sabnzbd-https
+            traefik.http.middlewares.sabnzbd-https.redirectscheme.scheme: https
+            # Https configuration
+            traefik.http.routers.sabnzbd.entrypoints: websecure
+            traefik.http.routers.sabnzbd.rule: Host(`{{ sabnzbd_host }}`)
+            traefik.http.routers.sabnzbd.tls: true
+
+      networks:
+        infrastructure_default:
+          external: true

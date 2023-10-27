@@ -1,0 +1,48 @@
+# Install ansible docker dependencies
+
+- name: Install pip
+  command: python3 -m ensurepip --upgrade
+
+- name: Install Docker Module for Python
+  pip:
+    name:
+      - docker
+      - docker-compose
+
+# Clean synology dashboard boards
+
+- name: server.mustache 80 replacements
+  ansible.builtin.replace:
+    path: /usr/syno/share/nginx/server.mustache
+    regexp: "80"
+    replace: "81"
+
+- name: server.mustache 443 replacements
+  ansible.builtin.replace:
+    path: /usr/syno/share/nginx/server.mustache
+    regexp: "443"
+    replace: "444"
+
+- name: DSM.mustache 80 replacements
+  ansible.builtin.replace:
+    path: /usr/syno/share/nginx/DSM.mustache
+    regexp: "80"
+    replace: "81"
+
+- name: DSM.mustache 443 replacements
+  ansible.builtin.replace:
+    path: /usr/syno/share/nginx/DSM.mustache
+    regexp: "443"
+    replace: "444"
+
+- name: WWWService.mustache 80 replacements
+  ansible.builtin.replace:
+    path: /usr/syno/share/nginx/WWWService.mustache
+    regexp: "80"
+    replace: "81"
+
+- name: WWWService.mustache 443 replacements
+  ansible.builtin.replace:
+    path: /usr/syno/share/nginx/WWWService.mustache
+    regexp: "443"
+    replace: "444"
