@@ -43,3 +43,11 @@
     path: "{{ docker_path }}/sabnzbd/incomplete"
     state: directory
     owner: "{{ ansible_ssh_user }}"
+
+# Bitwarden configuration
+
+- name: Create the Bitwarden config directory
+  file:
+    path: "{{ docker_path }}/bitwarden"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"

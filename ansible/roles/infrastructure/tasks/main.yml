@@ -9,6 +9,10 @@
           image: containrrr/watchtower:latest
           container_name: infrastructure_watchtower
           restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
           environment:
             WATCHTOWER_SCHEDULE: "0 0 * * * *"
             WATCHTOWER_CLEANUP: "true"
@@ -22,6 +26,10 @@
           image: traefik:latest
           container_name: infrastructure_traefik
           restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
           ports:
             - 80:80/tcp
             - 443:443/tcp
@@ -31,8 +39,6 @@
             - /var/run/docker.sock:/var/run/docker.sock:ro
           networks:
             - default
-          healthcheck:
-            test: ["CMD", "traefik", "healthcheck"]
           labels:
             # General configuration
             traefik.enable: true
@@ -51,6 +57,10 @@
           image: weejewel/wg-easy
           container_name: infrastructure_wireguard
           restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
           environment:
             WG_HOST: "{{ wireguard_host }}"
             PASSWORD: "{{ wireguard_password }}"

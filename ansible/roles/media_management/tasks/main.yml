@@ -9,6 +9,10 @@
           image: fallenbagel/jellyseerr:latest
           container_name: media_management_jellyseerr
           restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
           environment:
             TZ: "{{ timezone }}"
           networks:
@@ -32,6 +36,10 @@
           image: ghcr.io/hotio/sonarr:latest
           container_name: media_management_sonarr
           restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
           environment:
             TZ: "{{ timezone }}"
             PUID: 1000
@@ -58,6 +66,10 @@
           image: ghcr.io/hotio/radarr:latest
           container_name: media_management_radarr
           restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
           environment:
             TZ: "{{ timezone }}"
             PUID: 1000
@@ -84,6 +96,10 @@
           image: lscr.io/linuxserver/prowlarr:latest
           container_name: media_management_prowlarr
           restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
           environment:
             TZ: "{{ timezone }}"
             PUID: 1000
@@ -108,6 +124,10 @@
         sabnzbd:
           image: lscr.io/linuxserver/sabnzbd:latest
           container_name: media_management_sabnzbd
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
           environment:
             TZ: "{{ timezone }}"
             PUID: 1000
