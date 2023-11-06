@@ -38,7 +38,7 @@
             traefik.http.routers.homarr.tls: true
 
         jellyfin:
-          image: jellyfin/jellyfin
+          image: jellyfin/jellyfin:latest
           container_name: service_jellyfin
           restart: unless-stopped
           healthcheck:
