@@ -141,6 +141,34 @@
             traefik.http.services.bitwarden-https-service.loadbalancer.server.port: 8080
             traefik.http.routers.bitwarden.tls: true
 
+        audiobookshelf:
+          image: ghcr.io/advplyr/audiobookshelf:latest
+          container_name: service_audiobookshelf
+          restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
+          networks:
+            - infrastructure_default
+          volumes:
+            - "{{ media_path }}/audiobooks:/audiobooks"
+            - "{{ media_path }}/podcasts:/podcasts"
+            - "{{ docker_path }}/audiobookshelf/config:/config"
+            - "{{ docker_path }}/audiobookshelf/metadata:/metadata"
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.audiobookshelf-http.entrypoints: web
+            traefik.http.routers.audiobookshelf-http.rule: Host(`{{ audiobookshelf_host }}`)
+            traefik.http.routers.audiobookshelf-http.middlewares: audiobookshelf-https
+            traefik.http.middlewares.audiobookshelf-https.redirectscheme.scheme: https
+            # Https configuration
+            traefik.http.routers.audiobookshelf.entrypoints: websecure
+            traefik.http.routers.audiobookshelf.rule: Host(`{{ audiobookshelf_host }}`)
+            traefik.http.routers.audiobookshelf.tls: true
+
       networks:
         infrastructure_default:
           external: true
