@@ -1,8 +1,39 @@
 {
+  // !Editor settings
+  "cSpell.language": "en,de-de",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.organizeImports": true
+  },
+
+  //! Explorer
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    "Taskfile.yml": ".gitignore",
+    "Taskfile.yml": ".gitignore,.editorconfig",
     "ansible.cfg": "inventory.yml,requirements.yml"
+  },
+
+  "files.exclude": {
+    "**/__pycache__": true
+  },
+
+  //! Python
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.typeCheckingMode": "strict",
+  "python.languageServer": "Pylance",
+  "ruff.organizeImports": true,
+  "pylint.args": [
+    "--disable=missing-module-docstring",
+    "--disable=missing-class-docstring",
+    "--disable=missing-function-docstring",
+    "--disable=wrong-import-order",
+    "--disable=useless-import-alias"
+  ],
+
+  //! Formatters
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
   }
 }
