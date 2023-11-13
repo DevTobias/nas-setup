@@ -1,3 +1,5 @@
 **/certificates/*
 **/inventory.yml
 **/__pycache__
+**/*.env
+**/_out

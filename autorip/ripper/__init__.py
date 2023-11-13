@@ -1,1 +1,3 @@
-from .blueray_ripper import BlueRayRipper as BlueRayRipper
+__all__ = ["BlueRayRipper"]
+
+from .blueray_ripper import BlueRayRipper

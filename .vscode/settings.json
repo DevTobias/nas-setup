@@ -12,7 +12,8 @@
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
     "Taskfile.yml": ".gitignore,.editorconfig",
-    "ansible.cfg": "inventory.yml,requirements.yml"
+    "ansible.cfg": "inventory.yml,requirements.yml",
+    "pyproject.toml":"poetry.lock,autorip.env",
   },
 
   "files.exclude": {
@@ -29,7 +30,8 @@
     "--disable=missing-class-docstring",
     "--disable=missing-function-docstring",
     "--disable=wrong-import-order",
-    "--disable=useless-import-alias"
+    "--disable=useless-import-alias",
+    "--disable=too-many-instance-attributes"
   ],
 
   //! Formatters
