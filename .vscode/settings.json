@@ -13,7 +13,8 @@
   "explorer.fileNesting.patterns": {
     "Taskfile.yml": ".gitignore,.editorconfig",
     "ansible.cfg": "inventory.yml,requirements.yml",
-    "pyproject.toml":"poetry.lock,autorip.env",
+    "pyproject.toml":"poetry.lock",
+    "main.py": "autorip.toml"
   },
 
   "files.exclude": {

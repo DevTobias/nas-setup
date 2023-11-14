@@ -1,5 +1,5 @@
 **/certificates/*
 **/inventory.yml
 **/__pycache__
-**/*.env
+**/autorip.toml
 **/_out

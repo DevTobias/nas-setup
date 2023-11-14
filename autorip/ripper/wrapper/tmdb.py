@@ -1,8 +1,9 @@
 from typing import Any
 
 import requests
+from config import Config
+from logger import Logger
 from ripper.models.tmdb_responses import MovieResponse, TvResponse
-from utils import logger
 
 
 class TMDBWrapper:
@@ -13,11 +14,12 @@ class TMDBWrapper:
         - api_key (str): The API key for TMDb.
     """
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(self, config: Config, logger: Logger):
+        self._config = config
+        self._logger = logger
         self._base_url = "https://api.themoviedb.org/3"
-        self._api_key = api_key
 
-    def search(self, title: str, year: str | None) -> tuple[int, str] | None:
+    def search(self, title: str, year: str | None):
         """
         Search for a movie or TV show by title and year (optional).
 
@@ -32,7 +34,7 @@ class TMDBWrapper:
         multi_url = f"{self._base_url}/search/multi?query={title}&language=en-US"
         results = self._tmdb_request(multi_url)["results"]
 
-        logger.debug(f"Got TMDb search results: {results}")
+        self._logger.debug(f"Got TMDb search results: {results}")
 
         if year:
             results = [
@@ -40,10 +42,10 @@ class TMDBWrapper:
                 for result in results
                 if result.get("release_date", "").startswith(year)
             ]
-            logger.debug(f"Filtered TMDb search results by year: {results}")
+            self._logger.debug(f"Filtered TMDb search results by year: {results}")
 
         media_id, media_type = results[0].get("id"), results[0].get("media_type")
-        logger.info(f"Got TMDb search result: {media_id}, {media_type}")
+        self._logger.info(f"Got TMDb search result: {media_id}, {media_type}")
         return (media_id, media_type) if results else None
 
     def get_movie_details(self, movie_id: int) -> MovieResponse:
@@ -65,7 +67,7 @@ class TMDBWrapper:
             "runtime": result["runtime"],
             "title": result["title"],
         }
-        logger.info(f"Got movie details: {movie}")
+        self._logger.info(f"Got movie details: {movie}")
         return movie
 
     def get_tv_details(self, tv_id: int) -> TvResponse:
@@ -90,7 +92,7 @@ class TMDBWrapper:
             "number_of_episodes": result["number_of_episodes"],
             "number_of_seasons": result["number_of_seasons"],
         }
-        logger.info(f"Got TV show details: {tv}")
+        self._logger.info(f"Got TV show details: {tv}")
         return tv
 
     def _tmdb_request(self, url: str) -> Any:
@@ -106,9 +108,9 @@ class TMDBWrapper:
 
         headers = {
             "accept": "application/json",
-            "Authorization": f"Bearer {self._api_key}",
+            "Authorization": f"Bearer {self._config.get['metadata']['imdb_token']}",
         }
-        logger.debug(f"Making TMDb request to {url}, {headers}")
+        self._logger.debug(f"Making TMDb request to {url}, {headers}")
         body = requests.get(url, timeout=10, headers=headers).json()
-        logger.debug(f"Got TMDb response: {body}")
+        self._logger.debug(f"Got TMDb response: {body}")
         return body

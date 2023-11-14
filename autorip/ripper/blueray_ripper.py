@@ -3,9 +3,12 @@ import os
 from datetime import datetime
 
 import xmltodict
-from utils import aware, logger, normalize_disc_title
+from config import Config
+from logger import Logger
+from process import ProcessManager
+from utils import aware, normalize_disc_title
 
-from .models.disc_properties import Disc, Stream, Title, TitleMetrics
+from .models.disc_properties import Disc, Stream, Title
 from .models.makemkv_attributes import MAKEMKV_ATTRIBUTE_ENUMS
 from .models.tmdb_responses import MovieResponse, TvResponse
 from .wrapper.makemkv import MakeMKVWrapper
@@ -23,13 +26,15 @@ class BlueRayRipper:
         - imdb_token (str): The TMDB API token.
     """
 
-    def __init__(self, device: str, langs: list[str], imdb_token: str):
-        self._device = device
-        self._imdb_token: str = imdb_token
-        self._langs = langs
+    def __init__(self, config: Config, logger: Logger, process_manager: ProcessManager):
+        self._config = config
+        self._logger = logger
+        self._process_manager = process_manager
 
-        self._makemkv_client = MakeMKVWrapper(device, True)
-        self._tmdb_client = TMDBWrapper(imdb_token)
+        self._device = self._config.get["input"]["devices"][0]
+
+        self._makemkv_client = MakeMKVWrapper(config, logger, process_manager)
+        self._tmdb_client = TMDBWrapper(config, logger)
 
         self._disc: Disc = {}
         self._titles: dict[int, Title] = {}
@@ -39,6 +44,15 @@ class BlueRayRipper:
         self._movie_metadata: MovieResponse | None = None
         self._tv_metadata: TvResponse | None = None
 
+        self._main_feature: int | None = None
+
+    @property
+    def main_feature(self):
+        if self._main_feature is None:
+            raise ValueError("No main feature was detected.")
+
+        return (self._main_feature, self._titles[self._main_feature])
+
     ################################################################################################
     # Metadata-Gathering (MakeMKV, Disc, TMDB)                                                     #
     ################################################################################################
@@ -47,15 +61,9 @@ class BlueRayRipper:
         """
         Reads the properties of the disc and returns a tuple containing the disc and
         title information.
-
-        Returns:
-            Tuple: A tuple containing the disc and title information.
         """
 
         properties = self._makemkv_client.read_disc_properties()
-
-        if not properties:
-            return None
 
         _, stdout, _ = properties
         parsed = list(csv.reader(stdout.split("\n")))
@@ -93,23 +101,15 @@ class BlueRayRipper:
                     aware(self._titles[title].get("streams"))[stream], data[3], data[5]
                 )
 
-        # Filter out titles that don't have any stream where the audio stream
-        # has any of the provided lang codes
-        self._titles = {
-            title: title_info
-            for title, title_info in self._titles.items()
-            if any(
-                stream.get("lang_code") in self._langs
-                for stream in aware(title_info.get("streams")).values()
-                if stream.get("type") == "Audio"
-            )
-        }
-
         # Read the title from the device and fetch metadata from TMDB
+        self._filter_streams()
         self._read_title_from_device()
         self._fetch_tmdb_info()
 
-        return (self._disc, self._titles)
+        self._logger.info(f"Successfully read disc properties: {self._disc}")
+        self._logger.info(f"Successfully read title properties: {self._titles}")
+
+        return self
 
     def _read_title_from_device(self):
         """
@@ -132,10 +132,12 @@ class BlueRayRipper:
                 title = read_title if read_title else self._disc["name"]
 
         except OSError:
-            logger.error("Disc is a Blue Ray, but bdmt_eng.xml could not be found.")
+            self._logger.error(
+                "Disc is a Blue Ray, but bdmt_eng.xml could not be found."
+            )
 
         except KeyError:
-            logger.error("Could not parse title from bdmt_eng.xml file.")
+            self._logger.error("Could not parse title from bdmt_eng.xml file.")
 
         self._local_title = normalize_disc_title(title)
 
@@ -149,7 +151,7 @@ class BlueRayRipper:
         )
 
         if not search_response:
-            logger.error("Could not find movie or show in TMDB.")
+            self._logger.error("Could not find movie or show in TMDB.")
             return
 
         (media_id, media_type) = search_response
@@ -159,50 +161,95 @@ class BlueRayRipper:
         elif media_type == "tv":
             self._tv_metadata = self._tmdb_client.get_tv_details(media_id)
 
+    def _filter_streams(self):
+        """
+        Filters out titles that don't have any audio streams and titles that don't have any stream
+        where the audio stream has any of the provided lang codes.
+        """
+
+        # Filter out titles that don't have any audio streams
+        self._titles = {
+            title: title_info
+            for title, title_info in self._titles.items()
+            if any(
+                stream.get("type") == "Audio"
+                for stream in aware(title_info.get("streams")).values()
+            )
+        }
+
+        # Filter out titles that don't have any stream where the audio stream
+        # has any of the provided lang codes
+        self._titles = {
+            title: title_info
+            for title, title_info in self._titles.items()
+            if any(
+                stream.get("lang_code") in self._config.get["output"]["languages"]
+                for stream in aware(title_info.get("streams")).values()
+                if stream.get("type") == "Audio"
+            )
+        }
+
     ################################################################################################
     # Main Feature Detection                                                                       #
     ################################################################################################
 
     def detect_main_feature(self):
-        if len(self._titles) == 0:
-            return None
+        metrics = self._create_title_metrics()
 
-        title_metrics: list[TitleMetrics] = []
+        # Metrics weights: duration, chapters, subtitle_streams, audio_streams
+        weights = [0.81, 0.089, 0.071, 0.030]
+
+        # Largest of each metric, so we can normalize
+        max_of_field = list(
+            max(list(float(x[i]) for x in metrics)) for i in range(len(weights))
+        )
+
+        # Prune out any titles shorter than 85% of longest title
+        metrics = list(filter(lambda x: x[0] > 0.85 * max_of_field[0], metrics))
+
+        self._logger.info(f"Successfully pruned title metrics: {metrics}")
+
+        # Sort according to weighted sum of metrics
+        metrics = sorted(
+            metrics,
+            key=lambda row: sum(
+                row[i] * weights[i] / max_of_field[i] for i in range(len(metrics))
+            ),
+        )
+
+        self._main_feature = metrics[0][-1]
+
+        return self
+
+    def _create_title_metrics(self):
+        """
+        Creates a list of metrics for each title in the Blu-ray disc.
+
+        Returns:
+        A list of tuples, where each tuple contains the following metrics for a title:
+            - Duration (in seconds)
+            - Number of chapters
+            - Number of subtitles
+            - Number of audio streams
+            - Title number
+        """
+
+        if len(self._titles) == 0:
+            raise ValueError("No titles were found on the disc.")
+
+        metrics: list[tuple[int, int, int, int, int]] = []
 
         for title, title_info in self._titles.items():
-            title_metrics.append(
-                {
-                    "title": title,
-                    "duration": self._duration_to_seconds(
-                        title_info.get("duration", "0:00:00")
-                    ),
-                    "size": title_info.get("disk_size_bytes", 0),
-                    "chapters": title_info.get("chapter_count", 0),
-                    "subtitle_streams": len(
-                        [
-                            stream
-                            for stream in aware(title_info.get("streams")).values()
-                            if self._is_type(stream, "subtitle")
-                        ]
-                    ),
-                    "audio_streams": len(
-                        [
-                            stream
-                            for stream in aware(title_info.get("streams")).values()
-                            if self._is_type(stream, "audio")
-                        ]
-                    ),
-                    "video_streams": len(
-                        [
-                            stream
-                            for stream in aware(title_info.get("streams")).values()
-                            if self._is_type(stream, "video")
-                        ]
-                    ),
-                }
-            )
+            stream = aware(title_info.get("streams")).values()
+            duration = self._duration_to_seconds(title_info.get("duration", "0:00:00"))
+            chapters = int(title_info.get("chapter_count", 0))
+            n_subtitle = len([s for s in stream if self._is_type(s, "subtitle")])
+            s_audio = len([s for s in stream if self._is_type(s, "audio")])
+            metrics.append((duration, n_subtitle, s_audio, chapters, title))
 
-        return title_metrics
+        self._logger.debug(f"Successfully created title metrics: {metrics}")
+
+        return metrics
 
     ################################################################################################
     # Various helper functions                                                                     #

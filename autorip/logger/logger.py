@@ -2,6 +2,8 @@ import logging
 import os
 import sys
 
+from config import Config
+
 
 class Logger:
     """
@@ -12,8 +14,10 @@ class Logger:
         - silent (bool): Whether to disable logging to stdout or not.
     """
 
-    def __init__(self, debug: bool, silent: bool) -> None:
-        loglevel = logging.DEBUG if debug else logging.INFO
+    def __init__(self, config: Config) -> None:
+        self._config = config.get["logger"]
+
+        loglevel = logging.DEBUG if self._config["debug"] else logging.INFO
         frmt = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S"
         )
@@ -21,7 +25,7 @@ class Logger:
         self._log = logging.getLogger(os.path.basename(sys.argv[0]))
         self._log.setLevel(loglevel)
 
-        if not silent:
+        if not self._config["silent"]:
             self._stream_handler = logging.StreamHandler(sys.stdout)
             self._stream_handler.setLevel(loglevel)
             self._stream_handler.setFormatter(frmt)
@@ -64,6 +68,3 @@ class Logger:
         """
         self._log.critical(msg)
         sys.exit(1)
-
-
-logger = Logger(debug=False, silent=False)

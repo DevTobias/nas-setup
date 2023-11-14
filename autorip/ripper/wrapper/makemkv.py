@@ -1,4 +1,6 @@
-from utils import call_process, config, logger
+from config import Config
+from logger import Logger
+from process import ProcessManager
 
 
 class MakeMKVWrapper:
@@ -11,11 +13,12 @@ class MakeMKVWrapper:
         faster development. Defaults to False.
     """
 
-    def __init__(self, device: str, read_from_log: bool = False) -> None:
-        self._device = device
-        self._read_from_log = read_from_log
+    def __init__(self, config: Config, logger: Logger, process_manager: ProcessManager):
+        self._config = config
+        self._logger = logger
+        self._process_manager = process_manager
 
-    def read_disc_properties(self) -> tuple[int, str, str] | None:
+    def read_disc_properties(self) -> tuple[int, str, str]:
         """
         Reads the disc properties using the makemkvcon64 command line tool.
 
@@ -24,20 +27,24 @@ class MakeMKVWrapper:
             If the command fails, returns None.
         """
 
-        if self._read_from_log:
-            with open(f"{config['out_dir']}/stdout.log", "r", encoding="utf-8") as f:
+        logging_dir = self._config.get["output"]["logging_dir"]
+
+        if self._config.get["input"]["read_from_log"]:
+            with open(f"{logging_dir}/stdout.log", "r", encoding="utf-8") as f:
                 return 0, f.read(), ""
 
-        returncode, stdout, stderr = call_process(
-            ["makemkvcon64", "-r", "info", f"dev:{self._device}"]
+        device = self._config.get["input"]["devices"][0]
+
+        returncode, stdout, stderr = self._process_manager.call(
+            ["makemkvcon64", "-r", "info", f"dev:{device}"]
         )
 
         if returncode != 0:
-            logger.error(f"Could not acquire blue-ray title info from {self._device}")
-            logger.error(f"makemkvcon output:\n{stderr}")
-            return None
+            self._logger.error(f"Could not acquire blue-ray title info from {device}")
+            self._logger.error(f"makemkvcon output:\n{stderr}")
+            raise ValueError("Could not acquire blue-ray title info from {device}")
 
-        with open(f"{config['out_dir']}/stdout.log", "w", encoding="utf-8") as f:
+        with open(f"{logging_dir}/stdout.log", "w", encoding="utf-8") as f:
             f.write(stdout)
 
         return returncode, stdout, stderr
