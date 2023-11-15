@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "autorip"
 version = "0.1.0"
-description = ""
+description = "Automatic Ripping Machine"
 authors = ["DevTobias <tobi.kaerst@gmx.de>"]
 
 [tool.poetry.scripts]
