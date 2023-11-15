@@ -1,8 +1,8 @@
 import tomllib
 from jsonschema import validate
 
+from .config_types import AppConfig
 from .schema import config_schema
-from .types import AppConfig
 
 
 class Config:
@@ -11,8 +11,6 @@ class Config:
 
     Attributes:
         path (str): The path to the configuration file.
-        _raw (dict): The raw configuration data.
-        _config (AppConfig): The validated configuration data.
     """
 
     def __init__(self, path: str = "/etc/autorip/autorip.toml"):
@@ -22,6 +20,11 @@ class Config:
         self._config = self._validate()
 
     def _validate(self):
+        """
+        Validates the configuration instance against the configuration schema and returns
+        an AppConfig object.
+        """
+
         validate(instance=self._raw, schema=config_schema)
         return AppConfig(**self._raw)
 
@@ -30,4 +33,7 @@ class Config:
 
     @property
     def get(self) -> AppConfig:
+        """
+        Returns the current configuration object.
+        """
         return self._config

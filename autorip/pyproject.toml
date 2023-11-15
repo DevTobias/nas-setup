@@ -4,6 +4,10 @@ version = "0.1.0"
 description = ""
 authors = ["DevTobias <tobi.kaerst@gmx.de>"]
 
+[tool.poetry.scripts]
+ripper = "autorip:run"
+web = "web:run"
+
 [tool.isort]
 profile = "black"
 

@@ -3,10 +3,11 @@ import os
 from datetime import datetime
 
 import xmltodict
-from config import Config
-from logger import Logger
-from process import ProcessManager
-from utils import aware, normalize_disc_title
+
+from autorip.config import Config
+from autorip.logger import Logger
+from autorip.process import ProcessManager
+from autorip.utils import aware, normalize_disc_title
 
 from .models.disc_properties import Disc, Stream, Title
 from .models.makemkv_attributes import MAKEMKV_ATTRIBUTE_ENUMS
@@ -48,6 +49,16 @@ class BlueRayRipper:
 
     @property
     def main_feature(self):
+        """
+        Returns the main feature of the Blu-ray disc.
+
+        Raises:
+            ValueError: If no main feature was detected.
+
+        Returns:
+            Tuple[int, str]: A tuple containing the main feature index and title.
+        """
+
         if self._main_feature is None:
             raise ValueError("No main feature was detected.")
 
@@ -61,6 +72,9 @@ class BlueRayRipper:
         """
         Reads the properties of the disc and returns a tuple containing the disc and
         title information.
+
+        Returns:
+            The current instance of the BluRayRipper object.
         """
 
         self._logger.info(f"Reading disc properties from {self._device}...")
@@ -202,6 +216,14 @@ class BlueRayRipper:
     ################################################################################################
 
     def detect_main_feature(self):
+        """
+        Detects the main feature of the Blu-ray disc by analyzing various metrics such as
+        duration, chapters, subtitle streams, and audio streams.
+
+        Returns:
+            The current instance of the BluRayRipper object.
+        """
+
         self._logger.info("Detecting main feature...")
 
         metrics = self._create_title_metrics()

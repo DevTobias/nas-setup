@@ -34,9 +34,20 @@
     "--disable=useless-import-alias",
     "--disable=too-many-instance-attributes"
   ],
+  "python.autoComplete.extraPaths": ["autorip/autorip", "autorip/web"],
+  "python.defaultInterpreterPath": "~/AppData/Local/pypoetry/Cache/virtualenvs/autorip-GWbqsLle-py3.12/Scripts/python.exe",
 
   //! Formatters
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
-  }
+  },
+  "python.analysis.extraPaths": [
+    "autorip",
+    "autorip/autorip",
+    "autorip/autorip/ripper",
+    "autorip/autorip/process",
+    "autorip/autorip/config",
+    "autorip/autorip/logger",
+    "autorip/autorip/utils"
+  ]
 }

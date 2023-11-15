@@ -1,9 +1,10 @@
 from typing import Any
 
 import requests
-from config import Config
-from logger import Logger
-from ripper.models.tmdb_responses import MovieResponse, TvResponse
+
+from autorip.config import Config
+from autorip.logger import Logger
+from autorip.ripper.models.tmdb_responses import MovieResponse, TvResponse
 
 
 class TMDBWrapper:
