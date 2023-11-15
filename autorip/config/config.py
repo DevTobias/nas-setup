@@ -6,6 +6,15 @@ from .types import AppConfig
 
 
 class Config:
+    """
+    A class representing the configuration of the autorip application.
+
+    Attributes:
+        path (str): The path to the configuration file.
+        _raw (dict): The raw configuration data.
+        _config (AppConfig): The validated configuration data.
+    """
+
     def __init__(self, path: str = "/etc/autorip/autorip.toml"):
         with open(path, "rb") as toml:
             self._raw = tomllib.load(toml)

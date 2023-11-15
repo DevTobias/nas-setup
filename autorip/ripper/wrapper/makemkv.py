@@ -36,7 +36,8 @@ class MakeMKVWrapper:
         device = self._config.get["input"]["devices"][0]
 
         returncode, stdout, stderr = self._process_manager.call(
-            ["makemkvcon64", "-r", "info", f"dev:{device}"]
+            ["makemkvcon64", "-r", "info", f"dev:{device}"],
+            cb=self._logger.debug,
         )
 
         if returncode != 0:

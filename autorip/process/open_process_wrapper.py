@@ -57,6 +57,10 @@ class OpenProcessWrapper:
         self._pipe.wait()
         return self.release()
 
+    @property
+    def raw(self):
+        return self._pipe
+
     def release(self):
         self.returncode = self._pipe.returncode
         if not self._released:

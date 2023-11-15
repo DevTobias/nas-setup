@@ -63,6 +63,8 @@ class BlueRayRipper:
         title information.
         """
 
+        self._logger.info(f"Reading disc properties from {self._device}...")
+
         properties = self._makemkv_client.read_disc_properties()
 
         _, stdout, _ = properties
@@ -101,13 +103,13 @@ class BlueRayRipper:
                     aware(self._titles[title].get("streams"))[stream], data[3], data[5]
                 )
 
+        self._logger.info(f"Successfully read disc properties: {self._disc}")
+        self._logger.info(f"Successfully read title properties: {self._titles}")
+
         # Read the title from the device and fetch metadata from TMDB
         self._filter_streams()
         self._read_title_from_device()
         self._fetch_tmdb_info()
-
-        self._logger.info(f"Successfully read disc properties: {self._disc}")
-        self._logger.info(f"Successfully read title properties: {self._titles}")
 
         return self
 
@@ -116,6 +118,8 @@ class BlueRayRipper:
         Reads the title of the disc from the device and returns it. If the title cannot be read from
         the device, the method falls back to the default disc name.
         """
+
+        self._logger.info("Reading title from device...")
 
         title = self._disc.get("name", "unknown").replace("_", " ").title()
         meta_path = self._device + "/BDMV/META/DL/bdmt_eng.xml"
@@ -146,6 +150,8 @@ class BlueRayRipper:
         Fetches movie or TV show metadata from TMDB using the local title and year.
         """
 
+        self._logger.info(f"Fetching metadata from TMDB for {self._local_title}...")
+
         search_response = self._tmdb_client.search(
             aware(self._local_title), self._local_year
         )
@@ -166,6 +172,8 @@ class BlueRayRipper:
         Filters out titles that don't have any audio streams and titles that don't have any stream
         where the audio stream has any of the provided lang codes.
         """
+
+        self._logger.info("Filtering out unwanted streams...")
 
         # Filter out titles that don't have any audio streams
         self._titles = {
@@ -194,6 +202,8 @@ class BlueRayRipper:
     ################################################################################################
 
     def detect_main_feature(self):
+        self._logger.info("Detecting main feature...")
+
         metrics = self._create_title_metrics()
 
         # Metrics weights: duration, chapters, subtitle_streams, audio_streams
@@ -218,6 +228,7 @@ class BlueRayRipper:
         )
 
         self._main_feature = metrics[0][-1]
+        self._logger.info(f"Successfully detected main feature: {self._main_feature}")
 
         return self
 
