@@ -1,0 +1,10 @@
+{
+  "name": "autorip-web",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "pnpm -r --filter frontend run",
+    "upgrade": "pnpm -r --filter frontend upgrade --latest",
+    "clean": "pnpm dlx rimraf **/dist **/node_modules"
+  }
+}

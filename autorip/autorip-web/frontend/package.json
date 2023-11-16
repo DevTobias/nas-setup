@@ -1,0 +1,31 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "preview": "vite preview",
+    "build": "tsc && vite build",
+    "lint": "concurrently \"tsc --noEmit\" \"prettier --ignore-path ../.gitignore --check .\" \"eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0\" && rimraf tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@lint/eslint-config": "workspace:^",
+    "@types/node": "^20.9.0",
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^4.1.1",
+    "concurrently": "^8.2.2",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0"
+  },
+  "prettier": "@lint/eslint-config/prettier",
+  "eslintConfig": {
+    "extends": "@lint/eslint-config/eslint"
+  }
+}

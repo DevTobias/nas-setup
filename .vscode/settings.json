@@ -6,19 +6,29 @@
     "source.fixAll": true,
     "source.organizeImports": true
   },
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
 
   //! Explorer
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
+    // General nestings
+    "README.md": "LICENSE",
     "Taskfile.yml": ".gitignore,.editorconfig",
+    "package.json": ".gitignore,tsconfig.json,pnpm-workspace.yaml",
+    // Python nestings
     "ansible.cfg": "inventory.yml,requirements.yml",
-    "pyproject.toml":"poetry.lock",
-    "main.py": "autorip.toml"
+    "pyproject.toml": "poetry.lock",
+    "main.py": "autorip.toml",
+    // React / Vite nestings
+    "vite.config.ts": "index.html"
   },
 
   "files.exclude": {
-    "**/__pycache__": true
+    "**/__pycache__": true,
+    "**/node_modules": true,
+    "**/pnpm-lock.yaml": true
   },
 
   //! Python
@@ -34,13 +44,7 @@
     "--disable=useless-import-alias",
     "--disable=too-many-instance-attributes"
   ],
-  "python.autoComplete.extraPaths": ["autorip/autorip", "autorip/web"],
   "python.defaultInterpreterPath": "~/AppData/Local/pypoetry/Cache/virtualenvs/autorip-GWbqsLle-py3.12/Scripts/python.exe",
-
-  //! Formatters
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
-  },
   "python.analysis.extraPaths": [
     "autorip",
     "autorip/autorip",
@@ -49,5 +53,35 @@
     "autorip/autorip/config",
     "autorip/autorip/logger",
     "autorip/autorip/utils"
-  ]
+  ],
+
+  // Typescript
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+
+  // Eslint
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": ["autorip/autorip-web/frontend"],
+
+  //! Formatters
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "[json][jsonc][html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript][javascript]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  }
 }
