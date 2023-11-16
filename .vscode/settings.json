@@ -22,7 +22,7 @@
     "pyproject.toml": "poetry.lock",
     "main.py": "autorip.toml",
     // React / Vite nestings
-    "vite.config.ts": "index.html"
+    "vite.config.ts": "index.html,postcss.config.js,tailwind.config.js"
   },
 
   "files.exclude": {
@@ -58,6 +58,14 @@
   // Typescript
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.preferences.importModuleSpecifier": "non-relative",
+
+  // CSS
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
 
   // Eslint
   "eslint.validate": [

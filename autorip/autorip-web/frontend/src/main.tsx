@@ -1,8 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { Router } from '$components/core/Router';
+
+import '$styles/main.css';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <h1>Hello World</h1>
+    <Router />
   </StrictMode>
 );

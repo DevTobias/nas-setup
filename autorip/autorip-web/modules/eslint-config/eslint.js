@@ -22,18 +22,21 @@ module.exports = {
     "plugin:import/typescript",
     "plugin:jsx-a11y/recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:tailwindcss/recommended",
     "plugin:prettier/recommended",
     "prettier",
   ],
   settings: {
     react: {
-      version: "detect",
+      version: 'detect',
     },
-    "import/parsers": {
-      "@typescript-eslint/parser": [".ts", ".tsx"],
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
-    "import/resolver": {
-      typescript: { project: ["/tsconfig.json"] },
+    'import/resolver': {
+      typescript: {
+        project: ['./tsconfig.json', './tsconfig.node.json'],
+      },
     },
   },
   plugins: ["react-refresh", "@typescript-eslint", "import"],
