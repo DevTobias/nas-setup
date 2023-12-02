@@ -5,10 +5,10 @@ import { Navbar } from '$components/common/Navbar';
 export const BaseLayout = () => {
   return (
     <div className='grid h-screen grid-rows-layout'>
-      <header className='p-5'>
+      <header className='px-16 pb-8 pt-16'>
         <Navbar />
       </header>
-      <main className='container mx-auto p-16'>
+      <main className='w-full px-16'>
         <Outlet />
       </main>
     </div>

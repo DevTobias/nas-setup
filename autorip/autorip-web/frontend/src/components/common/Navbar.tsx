@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export const Navbar = () => {
   return (
-    <div className='navbar w-full rounded-lg bg-base-200 shadow-sm'>
+    <div className='dashboard-section navbar w-full'>
       <div className='flex-1'>
         <Link to='/' className='btn btn-ghost text-xl'>
           Autoripper

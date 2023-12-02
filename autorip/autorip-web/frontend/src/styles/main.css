@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .dashboard-section {
+    @apply rounded-lg bg-base-200 shadow-sm;
+  }
+}
