@@ -1,67 +1,37 @@
-# Traefik configuration
-
-- name: Create the traefik directory
+- name: Create volume directories if not exist
   file:
-    path: "{{ docker_path }}/traefik/certificates"
+    path: '{{ item }}'
     state: directory
-    owner: "{{ ansible_ssh_user }}"
+  loop:
+    - '{{ docker_path }}/dash'
+    - '{{ docker_path }}/audiobookshelf/metadata'
+    - '{{ docker_path }}/audiobookshelf/config'
+    - '{{ docker_path }}/bitwarden'
+    - '{{ docker_path }}/sabnzbd/incomplete'
+    - '{{ docker_path }}/sabnzbd/downloads'
+    - '{{ docker_path }}/sabnzbd/config'
+    - '{{ docker_path }}/prowlarr'
+    - '{{ docker_path }}/traefik'
+    - '{{ docker_path }}/traefik/certificates'
+    - '{{ docker_path }}/wireguard'
+    - '{{ docker_path }}/jellyseerr/config'
+    - '{{ docker_path }}/sonarr/config'
+    - '{{ docker_path }}/radarr/config'
+    - '{{ docker_path }}/homarr/configs'
+    - '{{ docker_path }}/homarr/icons'
+    - '{{ docker_path }}/homarr/data'
+    - '{{ docker_path }}/jellyfin/config'
+    - '{{ docker_path }}/jellyfin/cache'
+    - '{{ docker_path }}/kavita/data'
+
+# Traefik configuration
 
 - name: Copy traefik.yaml file
   template:
     src: traefik.yml.j2
-    dest: "{{ docker_path }}/traefik/traefik.yml"
+    dest: '{{ docker_path }}/traefik/traefik.yml'
 
 - name: Copy certificate
   ansible.builtin.copy:
     src: ../files/certificates/
-    dest: "{{ docker_path }}/traefik/certificates/"
-
-# Prowlarr configuration
-
-- name: Create the prowlarr directory
-  file:
-    path: "{{ docker_path }}/prowlarr"
-    state: directory
-    owner: "{{ ansible_ssh_user }}"
-
-# SABnzbd configuration
-
-- name: Create the SABnzbd config directory
-  file:
-    path: "{{ docker_path }}/sabnzbd/config"
-    state: directory
-    owner: "{{ ansible_ssh_user }}"
-
-- name: Create the SABnzbd downloads directory
-  file:
-    path: "{{ docker_path }}/sabnzbd/downloads"
-    state: directory
-    owner: "{{ ansible_ssh_user }}"
-
-- name: Create the SABnzbd incomplete directory
-  file:
-    path: "{{ docker_path }}/sabnzbd/incomplete"
-    state: directory
-    owner: "{{ ansible_ssh_user }}"
-
-# Bitwarden configuration
-
-- name: Create the Bitwarden config directory
-  file:
-    path: "{{ docker_path }}/bitwarden"
-    state: directory
-    owner: "{{ ansible_ssh_user }}"
-
-# Audiobookshelf configuration
-
-- name: Create the Audiobookshelf config directory
-  file:
-    path: "{{ docker_path }}/audiobookshelf/config"
-    state: directory
-    owner: "{{ ansible_ssh_user }}"
-
-- name: Create the Audiobookshelf metadata directory
-  file:
-    path: "{{ docker_path }}/audiobookshelf/metadata"
-    state: directory
-    owner: "{{ ansible_ssh_user }}"
+    dest: '{{ docker_path }}/traefik/certificates/'

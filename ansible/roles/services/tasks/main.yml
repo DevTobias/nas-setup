@@ -3,7 +3,7 @@
     project_name: services
     remove_orphans: true
     definition:
-      version: "3"
+      version: '3'
       services:
         homarr:
           image: ghcr.io/ajnart/homarr:latest
@@ -14,13 +14,14 @@
           logging:
             driver: none
           volumes:
-            - "{{ docker_path }}/homarr/configs:/app/data/configs"
-            - "{{ docker_path }}/homarr/icons:/app/public/icons"
+            - '{{ docker_path }}/homarr/configs:/app/data/configs'
+            - '{{ docker_path }}/homarr/icons:/app/public/icons'
+            - '{{ docker_path }}/homarr/data:/data'
             - /var/run/docker.sock:/var/run/docker.sock:ro
           environment:
-            TZ: "{{ timezone }}"
-            EDIT_MODE_PASSWORD: "{{ homarr_password }}"
-            BASE_URL: "{{ homarr_host }}"
+            TZ: '{{ timezone }}'
+            EDIT_MODE_PASSWORD: '{{ homarr_password }}'
+            BASE_URL: '{{ homarr_host }}'
             NODE_TLS_REJECT_UNAUTHORIZED: 0
           networks:
             - infrastructure_default
@@ -46,16 +47,16 @@
           logging:
             driver: none
           volumes:
-            - "{{ docker_path }}/jellyfin/config:/config"
-            - "{{ docker_path }}/jellyfin/cache:/cache"
-            - "{{ media_path }}:/media"
+            - '{{ docker_path }}/jellyfin/config:/config'
+            - '{{ docker_path }}/jellyfin/cache:/cache'
+            - '{{ media_path }}:/media'
           ports:
             - 7359:7359/udp
             - 1900:1900/udp
           environment:
             PUID: 1000
             PGID: 1000
-            TZ: "{{ timezone }}"
+            TZ: '{{ timezone }}'
           networks:
             - infrastructure_default
           labels:
@@ -82,12 +83,12 @@
           logging:
             driver: none
           volumes:
-            - "{{ media_path }}/manga:/manga"
-            - "{{ media_path }}/comics:/comics"
-            - "{{ media_path }}/books:/books"
-            - "{{ docker_path }}/kavita/data:/kavita/config"
+            - '{{ media_path }}/manga:/manga'
+            - '{{ media_path }}/comics:/comics'
+            - '{{ media_path }}/books:/books'
+            - '{{ docker_path }}/kavita/data:/kavita/config'
           environment:
-            TZ: "{{ timezone }}"
+            TZ: '{{ timezone }}'
           networks:
             - infrastructure_default
           labels:
@@ -103,43 +104,43 @@
             traefik.http.routers.kavita.rule: Host(`{{ kavita_host }}`)
             traefik.http.routers.kavita.tls: true
 
-        bitwarden:
-          image: bitwarden/self-host:beta
-          container_name: service_bitwarden
-          restart: unless-stopped
-          healthcheck:
-            disable: true
-          logging:
-            driver: none
-          networks:
-            - infrastructure_default
-          environment:
-            BW_INSTALLATION_ID: "{{ bitwarden_installation_id }}"
-            BW_INSTALLATION_KEY: "{{ bitwarden_installation_key }}"
-            BW_DOMAIN: "{{ bitwarden_host }}"
-            BW_DB_PROVIDER: "sqlite"
-            globalSettings__mail__replyToEmail: "{{ bitwarden_email }}"
-            globalSettings__mail__smtp__host: "smtp.gmail.com"
-            globalSettings__mail__smtp__port: "587"
-            globalSettings__mail__smtp__ssl: "true"
-            globalSettings__mail__smtp__username: "{{ bitwarden_email }}"
-            globalSettings__mail__smtp__password: "{{ bitwarden_email_password }}"
-          volumes:
-            - "{{ docker_path }}/bitwarden:/etc/bitwarden"
-          labels:
-            # General configuration
-            traefik.enable: true
-            # Http configuration
-            traefik.http.routers.bitwarden-http.entrypoints: web
-            traefik.http.routers.bitwarden-http.rule: Host(`{{ bitwarden_host }}`)
-            traefik.http.routers.bitwarden-http.middlewares: bitwarden-https
-            traefik.http.middlewares.bitwarden-https.redirectscheme.scheme: https
-            # Https configuration
-            traefik.http.routers.bitwarden.entrypoints: websecure
-            traefik.http.routers.bitwarden.rule: Host(`{{ bitwarden_host }}`)
-            traefik.http.routers.bitwarden.service: bitwarden-https-service
-            traefik.http.services.bitwarden-https-service.loadbalancer.server.port: 8080
-            traefik.http.routers.bitwarden.tls: true
+        # bitwarden:
+        #   image: bitwarden/self-host:beta
+        #   container_name: service_bitwarden
+        #   restart: unless-stopped
+        #   healthcheck:
+        #     disable: true
+        #   logging:
+        #     driver: none
+        #   networks:
+        #     - infrastructure_default
+        #   environment:
+        #     BW_INSTALLATION_ID: '{{ bitwarden_installation_id }}'
+        #     BW_INSTALLATION_KEY: '{{ bitwarden_installation_key }}'
+        #     BW_DOMAIN: '{{ bitwarden_host }}'
+        #     BW_DB_PROVIDER: 'sqlite'
+        #     globalSettings__mail__replyToEmail: '{{ bitwarden_email }}'
+        #     globalSettings__mail__smtp__host: 'smtp.gmail.com'
+        #     globalSettings__mail__smtp__port: '587'
+        #     globalSettings__mail__smtp__ssl: 'true'
+        #     globalSettings__mail__smtp__username: '{{ bitwarden_email }}'
+        #     globalSettings__mail__smtp__password: '{{ bitwarden_email_password }}'
+        #   volumes:
+        #     - '{{ docker_path }}/bitwarden:/etc/bitwarden'
+        #   labels:
+        #     # General configuration
+        #     traefik.enable: true
+        #     # Http configuration
+        #     traefik.http.routers.bitwarden-http.entrypoints: web
+        #     traefik.http.routers.bitwarden-http.rule: Host(`{{ bitwarden_host }}`)
+        #     traefik.http.routers.bitwarden-http.middlewares: bitwarden-https
+        #     traefik.http.middlewares.bitwarden-https.redirectscheme.scheme: https
+        #     # Https configuration
+        #     traefik.http.routers.bitwarden.entrypoints: websecure
+        #     traefik.http.routers.bitwarden.rule: Host(`{{ bitwarden_host }}`)
+        #     traefik.http.routers.bitwarden.service: bitwarden-https-service
+        #     traefik.http.services.bitwarden-https-service.loadbalancer.server.port: 8080
+        #     traefik.http.routers.bitwarden.tls: true
 
         audiobookshelf:
           image: ghcr.io/advplyr/audiobookshelf:latest
@@ -152,10 +153,10 @@
           networks:
             - infrastructure_default
           volumes:
-            - "{{ media_path }}/audiobooks:/audiobooks"
-            - "{{ media_path }}/podcasts:/podcasts"
-            - "{{ docker_path }}/audiobookshelf/config:/config"
-            - "{{ docker_path }}/audiobookshelf/metadata:/metadata"
+            - '{{ media_path }}/audiobooks:/audiobooks'
+            - '{{ media_path }}/podcasts:/podcasts'
+            - '{{ docker_path }}/audiobookshelf/config:/config'
+            - '{{ docker_path }}/audiobookshelf/metadata:/metadata'
           labels:
             # General configuration
             traefik.enable: true
@@ -168,6 +169,32 @@
             traefik.http.routers.audiobookshelf.entrypoints: websecure
             traefik.http.routers.audiobookshelf.rule: Host(`{{ audiobookshelf_host }}`)
             traefik.http.routers.audiobookshelf.tls: true
+
+        dash:
+          image: mauricenino/dashdot:latest
+          container_name: service_dash
+          restart: unless-stopped
+          privileged: true
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
+          networks:
+            - infrastructure_default
+          volumes:
+            - '{{ docker_path }}/dash:/mnt/host:ro'
+          labels:
+            # General configuration
+            traefik.enable: true
+            # Http configuration
+            traefik.http.routers.dash-http.entrypoints: web
+            traefik.http.routers.dash-http.rule: Host(`{{ dash_host }}`)
+            traefik.http.routers.dash-http.middlewares: dash-https
+            traefik.http.middlewares.dash-https.redirectscheme.scheme: https
+            # Https configuration
+            traefik.http.routers.dash.entrypoints: websecure
+            traefik.http.routers.dash.rule: Host(`{{ dash_host }}`)
+            traefik.http.routers.dash.tls: true
 
       networks:
         infrastructure_default:

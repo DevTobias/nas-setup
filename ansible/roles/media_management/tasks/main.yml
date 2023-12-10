@@ -3,7 +3,7 @@
     project_name: media_management
     remove_orphans: true
     definition:
-      version: "3"
+      version: '3'
       services:
         jellyseerr:
           image: fallenbagel/jellyseerr:latest
@@ -14,11 +14,11 @@
           logging:
             driver: none
           environment:
-            TZ: "{{ timezone }}"
+            TZ: '{{ timezone }}'
           networks:
             - infrastructure_default
           volumes:
-            - "{{ docker_path }}/jellyseerr/config:/app/config"
+            - '{{ docker_path }}/jellyseerr/config:/app/config'
           labels:
             # General configuration
             traefik.enable: true
@@ -41,12 +41,12 @@
           logging:
             driver: none
           environment:
-            TZ: "{{ timezone }}"
+            TZ: '{{ timezone }}'
             PUID: 1000
             PGID: 1000
           volumes:
-            - "{{ docker_path }}/sonarr/config:/config"
-            - "{{ media_path }}:/media"
+            - '{{ docker_path }}/sonarr/config:/config'
+            - '{{ media_path }}:/media'
           networks:
             - infrastructure_default
           labels:
@@ -71,12 +71,12 @@
           logging:
             driver: none
           environment:
-            TZ: "{{ timezone }}"
+            TZ: '{{ timezone }}'
             PUID: 1000
             PGID: 1000
           volumes:
-            - "{{ docker_path }}/radarr/config:/config"
-            - "{{ media_path }}:/media"
+            - '{{ docker_path }}/radarr/config:/config'
+            - '{{ media_path }}:/media'
           networks:
             - infrastructure_default
           labels:
@@ -101,11 +101,11 @@
           logging:
             driver: none
           environment:
-            TZ: "{{ timezone }}"
+            TZ: '{{ timezone }}'
             PUID: 1000
             PGID: 1000
           volumes:
-            - "{{ docker_path }}/prowlarr:/config"
+            - '{{ docker_path }}/prowlarr:/config'
           networks:
             - infrastructure_default
           labels:
@@ -129,14 +129,14 @@
           logging:
             driver: none
           environment:
-            TZ: "{{ timezone }}"
+            TZ: '{{ timezone }}'
             PUID: 1000
             PGID: 1000
           volumes:
-            - "{{ docker_path }}/sabnzbd/config:/config"
-            - "{{ docker_path }}/sabnzbd/downloads:/downloads"
-            - "{{ docker_path }}/sabnzbd/incomplete:/incomplete-downloads"
-            - "{{ media_path }}:/media"
+            - '{{ docker_path }}/sabnzbd/config:/config'
+            - '{{ docker_path }}/sabnzbd/downloads:/downloads'
+            - '{{ docker_path }}/sabnzbd/incomplete:/incomplete-downloads'
+            - '{{ media_path }}:/media'
           networks:
             - infrastructure_default
           labels:

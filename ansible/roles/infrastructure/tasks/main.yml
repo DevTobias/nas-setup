@@ -3,7 +3,7 @@
     project_name: infrastructure
     remove_orphans: true
     definition:
-      version: "3"
+      version: '3'
       services:
         watchtower:
           image: containrrr/watchtower:latest
@@ -14,9 +14,9 @@
           logging:
             driver: none
           environment:
-            WATCHTOWER_SCHEDULE: "0 0 * * * *"
-            WATCHTOWER_CLEANUP: "true"
-            TZ: "{{ timezone }}"
+            WATCHTOWER_SCHEDULE: '0 0 * * * *'
+            WATCHTOWER_CLEANUP: 'true'
+            TZ: '{{ timezone }}'
           volumes:
             - /var/run/docker.sock:/var/run/docker.sock
           networks:
@@ -34,8 +34,8 @@
             - 80:80/tcp
             - 443:443/tcp
           volumes:
-            - "{{ docker_path }}/traefik:/etc/traefik"
-            - "{{ docker_path }}/traefik/certificates:/certs"
+            - '{{ docker_path }}/traefik:/etc/traefik'
+            - '{{ docker_path }}/traefik/certificates:/certs'
             - /var/run/docker.sock:/var/run/docker.sock:ro
           networks:
             - default
@@ -62,12 +62,12 @@
           logging:
             driver: none
           environment:
-            WG_HOST: "{{ wireguard_host }}"
-            PASSWORD: "{{ wireguard_password }}"
+            WG_HOST: '{{ wireguard_host }}'
+            PASSWORD: '{{ wireguard_password }}'
           volumes:
-            - "{{ docker_path }}/wireguard:/etc/wireguard"
+            - '{{ docker_path }}/wireguard:/etc/wireguard'
           ports:
-            - "51820:51820/udp"
+            - '51820:51820/udp'
           cap_add:
             - NET_ADMIN
             - SYS_MODULE
