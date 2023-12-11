@@ -124,6 +124,7 @@
         sabnzbd:
           image: lscr.io/linuxserver/sabnzbd:latest
           container_name: media_management_sabnzbd
+          restart: unless-stopped
           healthcheck:
             disable: true
           logging:
