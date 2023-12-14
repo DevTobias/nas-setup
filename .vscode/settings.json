@@ -16,7 +16,7 @@
     // General nestings
     "README.md": "LICENSE",
     "Taskfile.yml": ".gitignore,.editorconfig",
-    "package.json": ".gitignore,tsconfig.json,pnpm-workspace.yaml",
+    "package.json": ".gitignore,tsconfig.json,pnpm-workspace.yaml,.env.local",
     // Python nestings
     "ansible.cfg": "inventory.yml,requirements.yml",
     "pyproject.toml": "poetry.lock",
@@ -80,7 +80,11 @@
     "typescript",
     "typescriptreact"
   ],
-  "eslint.workingDirectories": ["autorip/autorip-web/frontend"],
+  "eslint.workingDirectories": [
+    "autorip/autorip-web/frontend",
+    "discord/bot",
+    "discord/media_bot"
+  ],
 
   //! Formatters
   "[python]": {
