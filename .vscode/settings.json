@@ -16,7 +16,7 @@
     // General nestings
     "README.md": "LICENSE",
     "Taskfile.yml": ".gitignore,.editorconfig",
-    "package.json": ".gitignore,tsconfig.json,pnpm-workspace.yaml,.env.local",
+    "package.json": ".gitignore,tsconfig.json,pnpm-workspace.yaml,.env.local,bun.lockb",
     // Python nestings
     "ansible.cfg": "inventory.yml,requirements.yml",
     "pyproject.toml": "poetry.lock",
@@ -83,7 +83,7 @@
   "eslint.workingDirectories": [
     "autorip/autorip-web/frontend",
     "discord/bot",
-    "discord/media_bot"
+    "media_bot/discord"
   ],
 
   //! Formatters

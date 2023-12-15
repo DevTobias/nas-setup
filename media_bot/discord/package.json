@@ -1,23 +1,23 @@
 {
-  "name": "@nas/media_bot",
+  "name": "@media_bot/discord",
   "scripts": {
-    "dev": "esbuild src/index.ts --bundle --platform=node --packages=external --target=node14 --outdir=dist && cd dist && node index.js",
-    "build": "esbuild src/index.ts --bundle --platform=node --minify=true --target=node14 --outdir=dist"
+    "dev": "bun --watch src/index.ts "
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.44",
     "axios": "^1.6.2",
-    "canvas": "^2.11.2",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
+    "fuse.js": "^7.0.0",
     "glob": "^10.3.10",
     "sharp": "^0.33.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@lint/eslint-config": "workspace:^",
+    "@lint/eslint-config": "workspace:*",
     "@types/node": "^20.10.4",
     "esbuild": "^0.19.9",
+    "nodemon": "^3.0.2",
     "typescript": "^5.3.3"
   },
   "prettier": "@lint/eslint-config/prettier",

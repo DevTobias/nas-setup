@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
+import Fuse from 'fuse.js';
 import { globSync } from 'glob';
 
 import { config } from '$config';
@@ -29,28 +30,45 @@ export class MovieStore {
 
   private _bannerAspectRatio = 0.7;
 
+  private _searchResults = 0;
+
   constructor() {
     this._loadMovies();
   }
 
   public get maxPages() {
-    return Math.ceil(this._movies.length / (this._colAmount * this._rowAmount));
+    return Math.ceil(this._searchResults / (this._colAmount * this._rowAmount));
   }
 
-  public getMovies = async (page: number) => {
+  public get searchResults() {
+    return this._searchResults;
+  }
+
+  public getMovies = async (page: number, query: string | undefined) => {
+    let movies: Movie[] = this._movies;
+
+    // Filter movies if query is provided
+    if (query) {
+      movies = new Fuse(movies, { keys: ['meta.title'] }).search(query).map((result) => result.item);
+    }
+
+    this._searchResults = movies.length;
+    if (movies.length === 0) return null;
+
+    // Paginate search results
     const maxPerPage = this._colAmount * this._rowAmount;
     const pageStart = page * maxPerPage;
-    const pageEnd = pageStart > this._movies.length - 1 ? undefined : pageStart + maxPerPage;
-    const paginatedMovies = this._movies.slice(pageStart, pageEnd);
+    const pageEnd = pageStart > movies.length - 1 ? undefined : pageStart + maxPerPage;
+    const paginated = movies.slice(pageStart, pageEnd);
 
+    // Generate image grid and get titles to return
     const image = await createImageGrid(
-      paginatedMovies.map((movie) => movie.thumbnail),
+      paginated.map((movie) => movie.thumbnail),
       this._colAmount,
       this._rowAmount,
       this._cardPadding
     );
-
-    const titles = paginatedMovies.map((movie) => movie.meta.title);
+    const titles = paginated.map((movie) => movie.meta.title);
 
     return [titles, image] as const;
   };

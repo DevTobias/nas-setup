@@ -1,0 +1,13 @@
+{
+  "name": "autorip-web",
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "modules/*",
+    "discord"
+  ],
+  "scripts": {
+    "upgrade": "bunx npm-check-updates --workspaces --root -u",
+    "clean": "bunx rimraf **/dist **/node_modules"
+  }
+}
