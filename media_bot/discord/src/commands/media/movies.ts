@@ -1,9 +1,9 @@
 import { AttachmentBuilder, SlashCommandBuilder } from 'discord.js';
 
-import { createActionButtons } from '$commands/media/helper/createActionButtons';
-import { createMediaEmbed } from '$commands/media/helper/createMediaEmbed';
-import { createPaginationFooter } from '$commands/media/helper/createPaginationFooter';
-import { highlightResults } from '$commands/media/helper/highlightResults';
+import { createActionButtons } from '$features/media/discord/createActionButtons';
+import { createMediaEmbed } from '$features/media/discord/createMediaEmbed';
+import { createPaginationFooter } from '$features/media/discord/createPaginationFooter';
+import { highlightResults } from '$features/media/discord/highlightResults';
 import { MovieStore } from '$features/media/MovieStore';
 import { Command } from '$utils/discord/command';
 
