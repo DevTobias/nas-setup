@@ -2,7 +2,11 @@ import { Image, createCanvas } from '@napi-rs/canvas';
 
 import { wrapCanvasText } from '$utils/image/wrapCanvasText';
 
-export const createImageCard = async (title: string, thumbnail: { image: Image; width: number; height: number }) => {
+export const createImageCard = async (
+  title: string,
+  thumbnail: { image: Image; width: number; height: number },
+  renderText = false
+) => {
   const borderRadius = 10;
 
   const { width, height, image } = thumbnail!;
@@ -30,27 +34,29 @@ export const createImageCard = async (title: string, thumbnail: { image: Image; 
   context.fillStyle = gradient;
   context.fillRect(0, 0, width, height);
 
-  // Draw the title on the bottom image
-  let fontSize = 50;
-  let lineHeight = fontSize + 5;
-  context.fillStyle = '#ffffff';
-  context.font = `bold ${fontSize}px Arial`;
-
-  // Wrap the text and render it
-  let wrappedText = wrapCanvasText(context, title, width);
-
-  if (wrappedText.length > 2) {
-    fontSize = 30;
-    lineHeight = fontSize + 5;
+  if (renderText) {
+    // Draw the title on the bottom image
+    let fontSize = 50;
+    let lineHeight = fontSize + 5;
+    context.fillStyle = '#ffffff';
     context.font = `bold ${fontSize}px Arial`;
-    wrappedText = wrapCanvasText(context, title, width);
-  }
 
-  for (let j = 0; j < wrappedText.length; j += 1) {
-    const line = wrappedText[j];
-    const yPosition = j * lineHeight + height - fontSize - (wrappedText.length - 1) * lineHeight;
-    const lineMetrics = context.measureText(line);
-    context.fillText(line, width / 2 - lineMetrics.width / 2, yPosition, width);
+    // Wrap the text and render it
+    let wrappedText = wrapCanvasText(context, title, width);
+
+    if (wrappedText.length > 2) {
+      fontSize = 30;
+      lineHeight = fontSize + 5;
+      context.font = `bold ${fontSize}px Arial`;
+      wrappedText = wrapCanvasText(context, title, width);
+    }
+
+    for (let j = 0; j < wrappedText.length; j += 1) {
+      const line = wrappedText[j];
+      const yPosition = j * lineHeight + height - fontSize - (wrappedText.length - 1) * lineHeight;
+      const lineMetrics = context.measureText(line);
+      context.fillText(line, width / 2 - lineMetrics.width / 2, yPosition, width);
+    }
   }
 
   return [canvas, width, height] as const;
