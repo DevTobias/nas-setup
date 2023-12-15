@@ -1,11 +1,17 @@
 {
   "name": "@nas/media_bot",
   "scripts": {
-    "dev": "esbuild src/index.ts --bundle --platform=node --packages=external --target=node14 --outdir=dist && cd dist && node index.js"
+    "dev": "esbuild src/index.ts --bundle --platform=node --packages=external --target=node14 --outdir=dist && cd dist && node index.js",
+    "build": "esbuild src/index.ts --bundle --platform=node --minify=true --target=node14 --outdir=dist"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^0.1.44",
+    "axios": "^1.6.2",
+    "canvas": "^2.11.2",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
+    "glob": "^10.3.10",
+    "sharp": "^0.33.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

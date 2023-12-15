@@ -1,3 +1,3 @@
-import { Ping } from '$commands/ping';
+import { Movies } from '$commands/movies';
 
-export const commands = [Ping];
+export const commands = [Movies];
