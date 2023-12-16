@@ -21,7 +21,7 @@ export const Movies: Command = {
     await interaction.deferReply();
     const [actions, next, previous] = createActionButtons();
 
-    const sendMovieDetails = async () => {
+    const sendMovieOverview = async () => {
       const [titles, image] = await store.getMovies(currentPage, query);
 
       if (!image || titles.length === 0) {
@@ -39,12 +39,11 @@ export const Movies: Command = {
       return interaction.editReply({ files: [attachment], components: [actions as never], embeds: [embed] });
     };
 
-    (await sendMovieDetails()).createMessageComponentCollector({ time: 3_600_000 }).on('collect', async (confirmation) => {
+    (await sendMovieOverview()).createMessageComponentCollector({ time: 3_600_000 }).on('collect', async (confirmation) => {
       if (confirmation.customId === 'next') currentPage += 1;
       else if (confirmation.customId === 'previous') currentPage -= 1;
-
       await confirmation.deferUpdate();
-      await sendMovieDetails();
+      await sendMovieOverview();
     });
   },
 };
