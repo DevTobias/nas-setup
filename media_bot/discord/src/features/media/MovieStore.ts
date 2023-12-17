@@ -10,15 +10,18 @@ export const movieSchema = z.object({
   imdb_id: z.string(),
   title: z.string(),
   overview: z.string(),
+  runtime: z.number(),
   vote_average: z.number(),
-  release_date: z.string(),
+  release_date: z.string().transform((val) => new Date(val)),
   backdrop_path: z.string(),
   poster_path: z.string(),
   fan_arts: z.object({ movieposter: z.string().nullable(), moviethumb: z.string().nullable() }).nullable(),
   file: z.string(),
 });
 
-export class MovieStore extends BaseMediaStore<z.infer<typeof movieSchema>> {
+export type Movie = z.infer<typeof movieSchema>;
+
+export class MovieStore extends BaseMediaStore<Movie> {
   constructor() {
     super(
       movieSchema.parse,
