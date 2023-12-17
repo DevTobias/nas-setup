@@ -1,10 +1,11 @@
-import { Client, GatewayIntentBits, REST, Routes } from 'discord.js';
+import { GatewayIntentBits, REST, Routes } from 'discord.js';
 
 import { commands } from '$commands/_commands';
 import { config } from '$config';
 import { interactions } from '$interactions/_interactions';
+import { MediaClient } from '$utils/discord/client';
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new MediaClient({ intents: [GatewayIntentBits.Guilds] });
 interactions.forEach((interaction) => interaction(client));
 
 const main = async () => {

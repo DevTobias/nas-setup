@@ -1,6 +1,6 @@
 import { Image, createCanvas } from '@napi-rs/canvas';
 
-import { wrapCanvasText } from '$utils/image/wrapCanvasText';
+import { wrapCanvasText } from '$features/media/helper/image/wrapCanvasText';
 
 export const createImageCard = async (
   title: string,
@@ -59,5 +59,5 @@ export const createImageCard = async (
     }
   }
 
-  return [canvas, width, height] as const;
+  return [await canvas.encode('png'), width, height] as const;
 };

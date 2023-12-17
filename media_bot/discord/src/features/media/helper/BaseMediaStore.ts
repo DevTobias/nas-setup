@@ -3,11 +3,11 @@ import path from 'path';
 
 import { globSync } from 'glob';
 
-import { createImageGrid } from '$utils/image/createImageGrid';
-import { generateThumbnail } from '$utils/image/generateThumbnail';
-import { Thumbnail } from '$utils/models/thumbnail';
+import { createImageGrid } from '$features/media/helper/image/createImageGrid';
+import { generateThumbnail } from '$features/media/helper/image/generateThumbnail';
+import { Thumbnail } from '$features/media/models/thumbnail';
 
-type Media<M> = { meta: M; thumbnail: Thumbnail };
+export type Media<M> = { meta: M; thumbnail: Thumbnail };
 
 const cardPadding = 20;
 const colAmount = 3;

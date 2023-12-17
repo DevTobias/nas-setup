@@ -2,7 +2,7 @@ import { loadImage } from '@napi-rs/canvas';
 import axios from 'axios';
 import sharp from 'sharp';
 
-import { createImageCard } from '$utils/image/createImageCard';
+import { createImageCard } from '$features/media/helper/image/createImageCard';
 
 export const generateThumbnail = async (url: string, title: string, width: number, ratio: number) => {
   const { data } = await axios.get(url, { responseType: 'arraybuffer' });

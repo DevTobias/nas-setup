@@ -4,17 +4,14 @@ import { createActionButtons } from '$features/media/discord/createActionButtons
 import { createMediaEmbed } from '$features/media/discord/createMediaEmbed';
 import { createPaginationFooter } from '$features/media/discord/createPaginationFooter';
 import { highlightResults } from '$features/media/discord/highlightResults';
-import { MovieStore } from '$features/media/MovieStore';
 import { Command } from '$utils/discord/command';
-
-const store = new MovieStore();
 
 export const Movies: Command = {
   data: new SlashCommandBuilder()
     .setName('movies')
     .setDescription('Listet alle verfügbaren Filme auf.')
     .addStringOption((option) => option.setName('name').setDescription('Suche nach einem bestimmten Film.')),
-  run: async (_, interaction) => {
+  run: async ({ movieStore }, interaction) => {
     let currentPage = 0;
 
     const query = interaction.options.get('name')?.value?.toString();
@@ -22,18 +19,18 @@ export const Movies: Command = {
     const [actions, next, previous] = createActionButtons();
 
     const sendMovieOverview = async () => {
-      const [titles, image] = await store.getMovies(currentPage, query);
+      const [titles, image] = await movieStore.getMovies(currentPage, query);
 
       if (!image || titles.length === 0) {
         return interaction.editReply({ content: 'Keine Filme gefunden.' });
       }
 
-      next.setDisabled(currentPage === store.maxPages - 1);
+      next.setDisabled(currentPage === movieStore.maxPages - 1);
       previous.setDisabled(currentPage === 0);
 
       const attachment = new AttachmentBuilder(image, { name: 'media-overview.png' });
       const description = highlightResults(titles, query).join('\n');
-      const footer = createPaginationFooter(store.searchResults, currentPage + 1, store.maxPages);
+      const footer = createPaginationFooter(movieStore.searchResults, currentPage + 1, movieStore.maxPages);
       const embed = createMediaEmbed(description, footer);
 
       return interaction.editReply({ files: [attachment], components: [actions as never], embeds: [embed] });

@@ -8,24 +8,29 @@ import { BaseMediaStore } from '$features/media/helper/BaseMediaStore';
 export const movieSchema = z.object({
   id: z.number(),
   imdb_id: z.string(),
-  poster_path: z.string(),
-  runtime: z.number(),
   title: z.string(),
+  overview: z.string(),
+  vote_average: z.number(),
+  release_date: z.string(),
+  backdrop_path: z.string(),
+  poster_path: z.string(),
+  fan_arts: z.object({ movieposter: z.string().nullable(), moviethumb: z.string().nullable() }).nullable(),
   file: z.string(),
-  fanart: z.preprocess(
-    (val) => ((val as { status: string }).status !== 'error' ? val : null),
-    z.object({ movieposter: z.array(z.object({ url: z.string() })) }).nullable()
-  ),
 });
 
 export class MovieStore extends BaseMediaStore<z.infer<typeof movieSchema>> {
   constructor() {
     super(
       movieSchema.parse,
-      (meta) => [meta.title, meta.fanart?.movieposter?.[0]?.url ?? endpoints.tmdbImage(meta.poster_path)],
+      (meta) => [meta.title, meta.fan_arts?.movieposter ?? endpoints.tmdbImage(meta.poster_path)],
       config.MEDIA_PATH_MOVIES
     );
   }
+
+  public searchMovie = (query: string, media = this.media) => {
+    const results = new Fuse(media, { keys: ['meta.title'], threshold: 0.3 }).search(query).map((result) => result.item);
+    return results && results.length > 0 ? results[0] : null;
+  };
 
   public getMovies = async (page: number, query: string | undefined) => {
     const [movies, image] = await this.getMediaSummary(page, (media) => {
