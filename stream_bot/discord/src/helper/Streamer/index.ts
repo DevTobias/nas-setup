@@ -1,12 +1,13 @@
 import { Client } from 'discord.js-selfbot-v13';
 
-import { Command, streamLivestreamVideo } from '$stream';
-import { StreamConnection } from '$stream/Streamer/client/connections/StreamConnection';
-import { VoiceConnection } from '$stream/Streamer/client/connections/VoiceConnection';
-import { UdpClient } from '$stream/Streamer/client/UdpClient';
-import { GatewayOpCodes } from '$stream/Streamer/codes/GatewayOpCodes';
-import { AudioStream } from '$stream/streamLivestreamVideo/streams/AudioStream';
-import { VideoStream } from '$stream/streamLivestreamVideo/streams/VideoStream';
+import { StreamConnection } from '$helper/Streamer/client/connections/StreamConnection';
+import { VoiceConnection } from '$helper/Streamer/client/connections/VoiceConnection';
+import { UdpClient } from '$helper/Streamer/client/UdpClient';
+import { GatewayOpCodes } from '$helper/Streamer/codes/GatewayOpCodes';
+import { streamLivestreamVideo } from '$helper/Streamer/streamLivestreamVideo';
+import { AudioStream } from '$helper/Streamer/streamLivestreamVideo/streams/AudioStream';
+import { VideoStream } from '$helper/Streamer/streamLivestreamVideo/streams/VideoStream';
+import { Command } from '$helper/Streamer/types/command';
 
 interface Data {
   type: string;
@@ -197,7 +198,6 @@ export class Streamer {
   }
 
   public leaveVoice(): void {
-    console.log('leave');
     try {
       this._voiceConnection?.stop();
       this.sendOpcode(GatewayOpCodes.VOICE_STATE_UPDATE, {

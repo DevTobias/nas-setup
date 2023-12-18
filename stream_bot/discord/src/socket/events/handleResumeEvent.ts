@@ -1,7 +1,7 @@
 import { SocketStream } from '@fastify/websocket';
 
+import { Streamer } from '$helper/Streamer';
 import { send } from '$helper/ws';
-import { Streamer } from '$stream';
 
 export const handleResumeEvent = async (event: string, sock: SocketStream, streamer: Streamer) => {
   try {

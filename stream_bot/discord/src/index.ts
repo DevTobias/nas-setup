@@ -3,8 +3,8 @@ import { Client } from 'discord.js-selfbot-v13';
 import Fastify from 'fastify';
 
 import { config } from '$config';
+import { Streamer } from '$helper/Streamer';
 import { handleSocketMessage } from '$socket/handleSocketMessage';
-import { Streamer } from '$stream';
 
 const streamer = new Streamer(new Client({ checkUpdate: false }), {
   fps: config.FPS,

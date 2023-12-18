@@ -1,15 +1,16 @@
 import { SocketStream } from '@fastify/websocket';
 import z from 'zod';
 
+import { Streamer } from '$helper/Streamer';
 import { send } from '$helper/ws';
+import { handleLeaveEvent } from '$socket/events/handleLeaveEvent';
 import { handlePauseEvent } from '$socket/events/handlePauseEvent';
 import { handleResumeEvent } from '$socket/events/handleResumeEvent';
 import { handleStartEvent } from '$socket/events/handleStartEvent';
 import { handleStopEvent } from '$socket/events/handleStopEvent';
-import { Streamer } from '$stream';
 
 const messageSchema = z.object({
-  event: z.enum(['start', 'stop', 'pause', 'resume', 'restart']),
+  event: z.enum(['start', 'stop', 'pause', 'resume', 'restart', 'leave']),
   data: z.unknown(),
 });
 
@@ -33,8 +34,10 @@ export const handleSocketMessage = async (streamer: Streamer, conn: SocketStream
     case 'resume':
       return handleResumeEvent('resume', conn, streamer);
     case 'restart':
-      streamer.stopStream();
-      return setTimeout(() => handleStartEvent('restart', conn, streamer, data), 500);
+      handleStopEvent('stop', conn, streamer);
+      return setTimeout(() => handleStartEvent('restart', conn, streamer, data), 1000);
+    case 'leave':
+      return handleLeaveEvent('leave', conn, streamer);
     default:
       break;
   }

@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 
-import { UdpClient } from '$stream/Streamer/client/UdpClient';
-import { VoiceOpCodes } from '$stream/Streamer/codes/VoiceOpCodes';
+import { UdpClient } from '$helper/Streamer/client/UdpClient';
+import { VoiceOpCodes } from '$helper/Streamer/codes/VoiceOpCodes';
 
 type VoiceConnectionStatus = {
   hasSession: boolean;
@@ -125,6 +125,7 @@ export abstract class BaseMediaConnection {
       this.ws = new WebSocket(`wss://${this.server}/?v=7`, {
         followRedirects: true,
       });
+
       this.ws.on('open', () => {
         if (this.status.resuming) {
           this.status.resuming = false;
@@ -133,9 +134,11 @@ export abstract class BaseMediaConnection {
           this.identify();
         }
       });
+
       this.ws.on('error', (err: Error) => {
         console.error(err);
       });
+
       this.ws.on('close', (code: number) => {
         const wasStarted = this.status.started;
 
@@ -149,6 +152,7 @@ export abstract class BaseMediaConnection {
           this.start();
         }
       });
+
       this.setupEvents();
     }
   }

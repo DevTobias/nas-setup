@@ -1,10 +1,10 @@
 import udpCon from 'dgram';
 import { isIPv4 } from 'net';
 
-import { BaseMediaConnection } from '$stream/Streamer/client/connections/BaseMediaConnection';
-import { AudioPacketizer } from '$stream/Streamer/client/packetizer/AudioPacketizer';
-import { BaseMediaPacketizer, Max32BitInt } from '$stream/Streamer/client/packetizer/BaseMediaPacketizer';
-import { VideoPacketizerH264 } from '$stream/Streamer/client/packetizer/VideoPacketizerH264';
+import { BaseMediaConnection } from '$helper/Streamer/client/connections/BaseMediaConnection';
+import { AudioPacketizer } from '$helper/Streamer/client/packetizer/AudioPacketizer';
+import { BaseMediaPacketizer, Max32BitInt } from '$helper/Streamer/client/packetizer/BaseMediaPacketizer';
+import { VideoPacketizerH264 } from '$helper/Streamer/client/packetizer/VideoPacketizerH264';
 
 function parseLocalPacket(message: Buffer) {
   const packet = Buffer.from(message);

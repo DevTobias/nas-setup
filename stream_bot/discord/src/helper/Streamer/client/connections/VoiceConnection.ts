@@ -1,5 +1,5 @@
-import { BaseMediaConnection } from '$stream/Streamer/client/connections/BaseMediaConnection';
-import { StreamConnection } from '$stream/Streamer/client/connections/StreamConnection';
+import { BaseMediaConnection } from '$helper/Streamer/client/connections/BaseMediaConnection';
+import { StreamConnection } from '$helper/Streamer/client/connections/StreamConnection';
 
 export class VoiceConnection extends BaseMediaConnection {
   public streamConnection?: StreamConnection;

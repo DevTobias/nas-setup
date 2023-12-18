@@ -2,8 +2,8 @@ import { SocketStream } from '@fastify/websocket';
 import { z } from 'zod';
 
 import { config } from '$config';
+import { Streamer } from '$helper/Streamer';
 import { send } from '$helper/ws';
-import { Streamer } from '$stream';
 
 const startEventSchema = z.object({
   type: z.enum(['movie', 'tvshow']),
@@ -38,7 +38,6 @@ export const handleStartEvent = async (event: string, conn: SocketStream, stream
     if (flag) {
       send(conn, { event, succeeded: true, data: 'stream_finished' });
       streamer.stopStream();
-      streamer.leaveVoice();
     }
   } catch (e) {
     console.error('Failed to start stream', e);

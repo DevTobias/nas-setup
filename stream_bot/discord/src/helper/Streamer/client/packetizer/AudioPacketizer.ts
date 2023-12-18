@@ -1,5 +1,5 @@
-import { BaseMediaPacketizer } from '$stream/Streamer/client/packetizer/BaseMediaPacketizer';
-import { UdpClient } from '$stream/Streamer/client/UdpClient';
+import { BaseMediaPacketizer } from '$helper/Streamer/client/packetizer/BaseMediaPacketizer';
+import { UdpClient } from '$helper/Streamer/client/UdpClient';
 
 const timeIncrement = (48000 / 100) * 2;
 

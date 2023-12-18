@@ -1,5 +1,5 @@
-import { BaseMediaConnection } from '$stream/Streamer/client/connections/BaseMediaConnection';
-import { VoiceOpCodes } from '$stream/Streamer/codes/VoiceOpCodes';
+import { BaseMediaConnection } from '$helper/Streamer/client/connections/BaseMediaConnection';
+import { VoiceOpCodes } from '$helper/Streamer/codes/VoiceOpCodes';
 
 export class StreamConnection extends BaseMediaConnection {
   private _streamKey!: string;

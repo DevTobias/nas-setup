@@ -1,6 +1,6 @@
 import { crypto_secretbox_easy } from 'libsodium-wrappers';
 
-import { UdpClient } from '$stream/Streamer/client/UdpClient';
+import { UdpClient } from '$helper/Streamer/client/UdpClient';
 
 export const Max16BitInt = 2 ** 16 - 1;
 export const Max32BitInt = 2 ** 32 - 1;

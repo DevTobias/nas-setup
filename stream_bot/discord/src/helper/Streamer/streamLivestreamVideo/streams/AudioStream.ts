@@ -1,6 +1,6 @@
 import { Writable } from 'stream';
 
-import { UdpClient } from '$stream';
+import { UdpClient } from '$helper/Streamer/client/UdpClient';
 
 export class AudioStream extends Writable {
   public udb: () => UdpClient | undefined;
