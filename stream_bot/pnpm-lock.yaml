@@ -51,7 +51,7 @@ importers:
         specifier: ^0.7.13
         version: 0.7.13
       '@types/node':
-        specifier: ^20.10.4
+        specifier: ^20.10.5
         version: 20.10.5
       '@types/ws':
         specifier: ^8.5.10
@@ -72,7 +72,7 @@ importers:
         specifier: ^6.14.0
         version: 6.14.0(eslint@8.56.0)(typescript@5.3.3)
       eslint:
-        specifier: ^8.55.0
+        specifier: ^8.56.0
         version: 8.56.0
       eslint-config-airbnb-base:
         specifier: ^15.0.0
@@ -87,7 +87,7 @@ importers:
         specifier: ^3.6.1
         version: 3.6.1(@typescript-eslint/parser@6.14.0)(eslint-plugin-import@2.29.1)(eslint@8.56.0)
       eslint-plugin-import:
-        specifier: ^2.29.0
+        specifier: ^2.29.1
         version: 2.29.1(@typescript-eslint/parser@6.14.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.56.0)
       eslint-plugin-prettier:
         specifier: ^5.0.1
@@ -2575,7 +2575,7 @@ packages:
   /pino-abstract-transport@1.1.0:
     resolution: {integrity: sha512-lsleG3/2a/JIWUtf9Q5gUNErBqwIu1tUKTT3dUzaf5DySw9ra1wcqKjJjLX1VTY64Wk1eEOYsVGSaGfCK85ekA==}
     dependencies:
-      readable-stream: 4.4.2
+      readable-stream: 4.5.0
       split2: 4.2.0
     dev: false
 
@@ -2689,8 +2689,8 @@ packages:
       util-deprecate: 1.0.2
     dev: false
 
-  /readable-stream@4.4.2:
-    resolution: {integrity: sha512-Lk/fICSyIhodxy1IDK2HazkeGjSmezAWX2egdtJnYhtzKEsBPJowlI6F6LPb5tqIQILrMbx22S5o3GuJavPusA==}
+  /readable-stream@4.5.0:
+    resolution: {integrity: sha512-AeYh93VyUwnNI/HCB4XdAaP4N/yGgg3rci3ISEUSM0jN95yWpbL9tSuRIwHzCq7e6TzYwJ6Vn7viUYTsfIxBlQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       abort-controller: 3.0.0

@@ -19,7 +19,7 @@
     "@lint/eslint-config": "workspace:^",
     "@types/fluent-ffmpeg": "^2.1.24",
     "@types/libsodium-wrappers": "^0.7.13",
-    "@types/node": "^20.10.4",
+    "@types/node": "^20.10.5",
     "@types/ws": "^8.5.10",
     "esbuild": "^0.19.9",
     "typescript": "^5.3.3"
