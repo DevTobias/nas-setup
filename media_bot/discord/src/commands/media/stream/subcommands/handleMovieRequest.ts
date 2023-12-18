@@ -86,6 +86,8 @@ export const handleMovieRequest = async (
     if (payload.event === 'start' || payload.event === 'restart' || payload.event === 'leave') {
       title = `Stream für \`${movie.title} (${movie.release_date.getFullYear()})\` beendet`;
       components = [];
+      collector.stop();
+      socket.close();
     }
 
     await interaction.editReply({
