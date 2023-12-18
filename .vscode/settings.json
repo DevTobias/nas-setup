@@ -82,7 +82,7 @@
   ],
   "eslint.workingDirectories": [
     "autorip/autorip-web/frontend",
-    "discord/bot",
+    "stream_bot/discord",
     "media_bot/discord"
   ],
 

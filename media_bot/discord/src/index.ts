@@ -5,7 +5,7 @@ import { config } from '$config';
 import { interactions } from '$interactions/_interactions';
 import { MediaClient } from '$utils/discord/client';
 
-const client = new MediaClient({ intents: [GatewayIntentBits.Guilds] });
+const client = new MediaClient({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 interactions.forEach((interaction) => interaction(client));
 
 const main = async () => {

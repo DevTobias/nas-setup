@@ -9,6 +9,7 @@ export const configSchema = object({
   TMDB_TOKEN: string(),
   MEDIA_PATH_SERIES: string(),
   MEDIA_PATH_MOVIES: string(),
+  STREAMER_ENDPOINT: string(),
 });
 
 export const config = configSchema.parse(process.env);

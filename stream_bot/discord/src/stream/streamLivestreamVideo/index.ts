@@ -1,10 +1,10 @@
 import { Readable, Transform } from 'stream';
 
-import { StreamOutput } from '@dank074/fluent-ffmpeg-multistream-ts';
 import ffmpeg, { FfmpegCommand } from 'fluent-ffmpeg';
 import prism from 'prism-media';
 
 import { UdpClient } from '$stream/Streamer/client/UdpClient';
+import { StreamOutput } from '$stream/streamLivestreamVideo/helper/FFMpegMultistream';
 import { H264Transformer } from '$stream/streamLivestreamVideo/helper/H264Transformer';
 import { AudioStream } from '$stream/streamLivestreamVideo/streams/AudioStream';
 import { VideoStream } from '$stream/streamLivestreamVideo/streams/VideoStream';

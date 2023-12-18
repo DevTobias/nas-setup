@@ -1,14 +1,14 @@
 {
-  "name": "@nas/video-stream",
+  "name": "@stream_bot/discord",
   "scripts": {
     "dev": "esbuild src/index.ts --bundle --platform=node --packages=external --target=node14 --outdir=dist && cd dist && node index.js"
   },
   "dependencies": {
-    "@dank074/discord-video-stream": "^3.0.2",
-    "@dank074/fluent-ffmpeg-multistream-ts": "^1.0.2",
     "@discordjs/opus": "^0.9.0",
+    "@fastify/websocket": "^8.3.0",
     "discord.js-selfbot-v13": "^2.15.0",
     "dotenv": "^16.3.1",
+    "fastify": "^4.25.1",
     "fluent-ffmpeg": "^2.1.2",
     "libsodium-wrappers": "^0.7.13",
     "prism-media": "^1.3.5",

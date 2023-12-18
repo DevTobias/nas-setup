@@ -1,8 +1,9 @@
-import { Client, CommandInteraction, Events } from 'discord.js';
+import { CommandInteraction, Events } from 'discord.js';
 
 import { commands } from '$commands/_commands';
+import { MediaClient } from '$utils/discord/client';
 
-const handleSlashCommand = async (client: Client, interaction: CommandInteraction) => {
+const handleSlashCommand = async (client: MediaClient, interaction: CommandInteraction) => {
   const command = commands.find((c) => c.data.name === interaction.commandName);
 
   if (!command) {
@@ -22,7 +23,7 @@ const handleSlashCommand = async (client: Client, interaction: CommandInteractio
   }
 };
 
-export const interactionCreate = (client: Client) => {
+export const interactionCreate = (client: MediaClient) => {
   client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isChatInputCommand()) {
       await handleSlashCommand(client, interaction);

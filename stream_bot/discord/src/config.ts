@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { boolean, number, object, string } from 'zod';
 
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: '../.env.local' });
 
 export const configSchema = object({
   CLIENT_TOKEN: string(),
@@ -14,6 +14,9 @@ export const configSchema = object({
   INCLUDE_AUDIO: boolean().default(true),
   BITRATE_KBPS: number().default(5000),
   HARDWARE_ACCELERATION: boolean().default(false),
+
+  PORT: number().default(3000),
+  HOST: string().default('localhost'),
 });
 
 export const config = configSchema.parse(process.env);

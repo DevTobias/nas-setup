@@ -1,13 +1,10 @@
 {
-  "name": "autorip-web",
+  "name": "media_bot",
   "private": true,
   "license": "MIT",
-  "workspaces": [
-    "modules/*",
-    "discord"
-  ],
   "scripts": {
-    "upgrade": "bunx npm-check-updates --workspaces --root -u",
-    "clean": "bunx rimraf **/dist **/node_modules"
+    "start": "pnpm -r --filter frontend run",
+    "upgrade": "pnpm -r --filter frontend upgrade --latest",
+    "clean": "pnpm dlx rimraf **/dist **/node_modules"
   }
 }
