@@ -10,14 +10,22 @@ export const handleMovieRequest = async (
   interaction: CommandInteraction,
   socket: WebSocket,
   { actions, pauseBtn, stopBtn, leaveBtn, restartBtn }: MediaControlButtons,
-  movie: Movie
+  movie: Movie,
+  startTime?: string
 ) => {
   const movieEmbed = createMovieEmbed(movie, interaction.user);
 
   const channelId = interaction.inGuild() ? (interaction.member as GuildMember).voice.channelId : null;
   if (!channelId) return interaction.editReply('You must be in a voice channel to start a stream ❌');
 
-  const startPayload = { mediaPath: movie.file, channelId, guildId: interaction.guildId!, type: 'movie' };
+  const startPayload = {
+    mediaPath: movie.file,
+    channelId,
+    guildId: interaction.guildId!,
+    type: 'movie',
+    startTime,
+  };
+
   send(socket, { event: 'start', data: startPayload });
 
   pauseBtn.setDisabled(false);

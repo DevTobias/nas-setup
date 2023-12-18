@@ -7,6 +7,7 @@ import { send } from '$helper/ws';
 
 const startEventSchema = z.object({
   type: z.enum(['movie', 'tvshow']),
+  startTime: z.string(),
   mediaPath: z.string(),
   channelId: z.string(),
   guildId: z.string(),
@@ -31,6 +32,7 @@ export const handleStartEvent = async (event: string, conn: SocketStream, stream
     const flag = await streamer.startStream(path, {
       includeAudio: config.INCLUDE_AUDIO,
       hardwareAcceleration: config.HARDWARE_ACCELERATION,
+      startTime: parsed.data.startTime,
     });
 
     if (flag) {

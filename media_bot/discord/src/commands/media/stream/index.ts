@@ -24,15 +24,16 @@ export const Stream: Command = {
         .setRequired(true)
         .addChoices({ name: 'Serie', value: 'tv_show' }, { name: 'Film', value: 'movie' })
     )
-    .addStringOption((option) => option.setName('name').setDescription('Name der Serie oder des Films.').setRequired(true)),
+    .addStringOption((option) => option.setName('name').setDescription('Name der Serie oder des Films.').setRequired(true))
+    .addStringOption((option) => option.setName('start').setDescription('Start des Mediums im Format [[hh:]mm:]ss[.xxx].')),
   run: async ({ movieStore, tvShowStore }, interaction) => {
     await interaction.deferReply();
 
     const type = interaction.options.get('type')!.value!.toString() as 'tv_show' | 'movie';
     const name = interaction.options.get('name')!.value!.toString();
+    const start = interaction.options.get('start')?.value?.toString();
 
     const controlActions = createMediaControlButtons();
-
     const socket = await connectToWebSocket(config.STREAMER_ENDPOINT);
 
     if (type === 'movie') {
@@ -42,7 +43,7 @@ export const Stream: Command = {
         return interaction.editReply({ content: `Der Film **${name}** konnte nicht gefunden werden` });
       }
 
-      return handleMovieRequest(interaction, socket, controlActions, movie.meta);
+      return handleMovieRequest(interaction, socket, controlActions, movie.meta, start);
     }
 
     if (type === 'tv_show') {

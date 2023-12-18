@@ -8,6 +8,7 @@ import { streamLivestreamVideo } from '$helper/Streamer/streamLivestreamVideo';
 import { AudioStream } from '$helper/Streamer/streamLivestreamVideo/streams/AudioStream';
 import { VideoStream } from '$helper/Streamer/streamLivestreamVideo/streams/VideoStream';
 import { Command } from '$helper/Streamer/types/command';
+import { timeStringToSeconds } from '$helper/time';
 
 interface Data {
   type: string;
@@ -36,6 +37,7 @@ type StreamOptions = {
 type PlayerConfig = {
   includeAudio: boolean;
   hardwareAcceleration: boolean;
+  startTime: string;
 };
 
 export class Streamer {
@@ -144,7 +146,13 @@ export class Streamer {
     };
 
     try {
+      if (options.startTime) {
+        this._currentPlaytime = timeStringToSeconds(options.startTime) * 1000;
+        this._onProgress?.(this._currentPlaytime);
+      }
+
       const [streamPromise, videoStream, audioStream] = streamLivestreamVideo(path, () => this._udbClient, {
+        startTime: options.startTime,
         includeAudio: options.includeAudio,
         fps: this._options.fps,
         hardwareAcceleration: options.hardwareAcceleration,

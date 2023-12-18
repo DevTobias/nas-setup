@@ -13,6 +13,7 @@ type StreamState = 'started' | 'ended' | 'playing' | 'error';
 
 interface StreamOptions {
   includeAudio: boolean;
+  startTime?: string;
   fps: number;
   hardwareAcceleration: boolean;
   onEvent: (state: StreamState, command: FfmpegCommand | undefined) => void;
@@ -53,6 +54,7 @@ export const streamLivestreamVideo = (
         .addOption('-loglevel', '0')
         .addOption('-fflags', 'nobuffer')
         .addOption('-analyzeduration', '0')
+        .setStartTime(options.startTime ?? 0)
         .on('start', () => options.onEvent('started', command))
         .on('end', () => {
           const tryToEnd = () => {
