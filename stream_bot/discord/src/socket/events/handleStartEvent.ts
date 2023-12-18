@@ -24,9 +24,7 @@ export const handleStartEvent = async (event: string, conn: SocketStream, stream
 
   try {
     await streamer.joinVoice(guildId, channelId);
-    await streamer.createStream().catch((e) => {
-      console.error('Failed to create stream', e);
-    });
+    await streamer.createStream();
 
     const path = `${type === 'movie' ? config.MEDIA_PATH_MOVIES : config.MEDIA_PATH_SERIES}/${mediaPath}`;
 

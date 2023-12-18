@@ -49,12 +49,12 @@ export class TvShowStore extends BaseMediaStore<z.infer<typeof tvShowSchema>> {
     );
   }
 
-  public searchTvShow = (query: string, media = this.media) => {
+  public search = (query: string, media = this.media) => {
     const results = new Fuse(media, { keys: ['meta.name'], threshold: 0.3 }).search(query).map((result) => result.item);
     return results && results.length > 0 ? results[0] : null;
   };
 
-  public getTvShows = async (page: number, query: string | undefined) => {
+  public searchAll = async (page: number, query: string | undefined) => {
     const [shows, image] = await this.getMediaSummary(page, (media) => {
       if (!query) return media;
       return new Fuse(media, { keys: ['meta.name'], threshold: 0.3 }).search(query).map((result) => result.item);

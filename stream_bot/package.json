@@ -3,7 +3,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "start": "pnpm -r --filter frontend run",
+    "start": "pnpm -r --filter discord run",
     "upgrade": "pnpm -r upgrade --latest",
     "clean": "pnpm dlx rimraf **/dist **/node_modules"
   }

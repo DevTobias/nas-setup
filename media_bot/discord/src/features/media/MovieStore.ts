@@ -30,12 +30,12 @@ export class MovieStore extends BaseMediaStore<Movie> {
     );
   }
 
-  public searchMovie = (query: string, media = this.media) => {
+  public search = (query: string, media = this.media) => {
     const results = new Fuse(media, { keys: ['meta.title'], threshold: 0.3 }).search(query).map((result) => result.item);
     return results && results.length > 0 ? results[0] : null;
   };
 
-  public getMovies = async (page: number, query: string | undefined) => {
+  public searchAll = async (page: number, query: string | undefined) => {
     const [movies, image] = await this.getMediaSummary(page, (media) => {
       if (!query) return media;
       return new Fuse(media, { keys: ['meta.title'], threshold: 0.3 }).search(query).map((result) => result.item);

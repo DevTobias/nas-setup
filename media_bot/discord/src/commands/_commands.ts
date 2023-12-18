@@ -1,5 +1,4 @@
-import { Movies } from '$commands/media/movies';
-import { TvShows } from '$commands/media/shows';
+import { Search } from '$commands/media/search';
 import { Stream } from '$commands/media/stream';
 
-export const commands = [Movies, TvShows, Stream];
+export const commands = [Stream, Search];

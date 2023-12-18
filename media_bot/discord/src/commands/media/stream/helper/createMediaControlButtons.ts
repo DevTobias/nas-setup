@@ -25,6 +25,8 @@ export const createMediaControlButtons = () => {
     disabled: true,
   });
 
-  const actions = new ActionRowBuilder().addComponents(restartBtn, pauseBtn, stopBtn);
+  const actions = new ActionRowBuilder<ButtonBuilder>().addComponents(restartBtn, pauseBtn, stopBtn);
   return { actions, restartBtn, pauseBtn, stopBtn };
 };
+
+export type MediaControlButtons = ReturnType<typeof createMediaControlButtons>;

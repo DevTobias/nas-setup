@@ -6,9 +6,9 @@ import {
   StringSelectMenuOptionBuilder,
 } from 'discord.js';
 
+import { createMediaControlButtons } from '$commands/media/stream/helper/createMediaControlButtons';
 import { handleMovieRequest } from '$commands/media/stream/helper/handleMovieRequest';
 import { config } from '$config';
-import { createMediaControlButtons } from '$features/media/discord/createMediaControlButtons';
 import { Command } from '$utils/discord/command';
 import { trunc } from '$utils/trunc';
 import { connectToWebSocket } from '$utils/ws';
@@ -36,7 +36,7 @@ export const Stream: Command = {
     const socket = await connectToWebSocket(config.STREAMER_ENDPOINT);
 
     if (type === 'movie') {
-      const movie = movieStore.searchMovie(name);
+      const movie = movieStore.search(name);
 
       if (!movie) {
         return interaction.editReply({ content: `Der Film **${name}** konnte nicht gefunden werden` });
@@ -46,7 +46,7 @@ export const Stream: Command = {
     }
 
     if (type === 'tv_show') {
-      const show = tvShowStore.searchTvShow(name);
+      const show = tvShowStore.search(name);
       if (!show) return interaction.editReply({ content: 'Die Serie konnte nicht gefunden werden' });
 
       const selectSeason = new StringSelectMenuBuilder()

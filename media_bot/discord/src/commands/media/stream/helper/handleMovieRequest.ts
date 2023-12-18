@@ -1,15 +1,15 @@
 import { CommandInteraction, ComponentType, GuildMember } from 'discord.js';
 import { WebSocket } from 'ws';
 
-import { createMediaControlButtons } from '$features/media/discord/createMediaControlButtons';
-import { createMovieEmbed } from '$features/media/discord/createMovieEmbed';
+import { MediaControlButtons } from '$commands/media/stream/helper/createMediaControlButtons';
+import { createMovieEmbed } from '$commands/media/stream/helper/createMovieEmbed';
 import { Movie } from '$features/media/MovieStore';
 import { parsePayload, send } from '$utils/ws';
 
 export const handleMovieRequest = async (
   interaction: CommandInteraction,
   socket: WebSocket,
-  { actions, pauseBtn, stopBtn }: ReturnType<typeof createMediaControlButtons>,
+  { actions, pauseBtn, stopBtn }: MediaControlButtons,
   movie: Movie
 ) => {
   const movieEmbed = createMovieEmbed(movie, interaction.user);
