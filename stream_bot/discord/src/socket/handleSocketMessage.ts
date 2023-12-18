@@ -9,11 +9,11 @@ import { handleStopEvent } from '$socket/events/handleStopEvent';
 import { Streamer } from '$stream';
 
 const messageSchema = z.object({
-  event: z.enum(['start', 'stop', 'pause', 'resume']),
+  event: z.enum(['start', 'stop', 'pause', 'resume', 'restart']),
   data: z.unknown(),
 });
 
-export const handleSocketMessage = (streamer: Streamer, conn: SocketStream, msg: string) => {
+export const handleSocketMessage = async (streamer: Streamer, conn: SocketStream, msg: string) => {
   const parsed = messageSchema.safeParse(JSON.parse(msg));
 
   if (!parsed.success) {
@@ -32,6 +32,9 @@ export const handleSocketMessage = (streamer: Streamer, conn: SocketStream, msg:
       return handlePauseEvent('pause', conn, streamer);
     case 'resume':
       return handleResumeEvent('resume', conn, streamer);
+    case 'restart':
+      streamer.stopStream();
+      return setTimeout(() => handleStartEvent('restart', conn, streamer, data), 500);
     default:
       break;
   }

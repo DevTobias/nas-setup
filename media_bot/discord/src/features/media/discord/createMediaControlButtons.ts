@@ -1,6 +1,14 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
 export const createMediaControlButtons = () => {
+  const restartBtn = new ButtonBuilder({
+    custom_id: 'restart',
+    emoji: '🔄',
+    label: ' Neustarten',
+    style: ButtonStyle.Secondary,
+    disabled: false,
+  });
+
   const pauseBtn = new ButtonBuilder({
     custom_id: 'pause',
     emoji: '⏸️',
@@ -17,6 +25,6 @@ export const createMediaControlButtons = () => {
     disabled: true,
   });
 
-  const actions = new ActionRowBuilder().addComponents(pauseBtn, stopBtn);
-  return { actions, pauseBtn, stopBtn };
+  const actions = new ActionRowBuilder().addComponents(restartBtn, pauseBtn, stopBtn);
+  return { actions, restartBtn, pauseBtn, stopBtn };
 };

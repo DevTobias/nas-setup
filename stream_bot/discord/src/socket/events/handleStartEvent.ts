@@ -24,18 +24,22 @@ export const handleStartEvent = async (event: string, conn: SocketStream, stream
 
   try {
     await streamer.joinVoice(guildId, channelId);
-    await streamer.createStream();
+    await streamer.createStream().catch((e) => {
+      console.error('Failed to create stream', e);
+    });
 
     const path = `${type === 'movie' ? config.MEDIA_PATH_MOVIES : config.MEDIA_PATH_SERIES}/${mediaPath}`;
-    await streamer.startStream(path, {
+
+    const flag = await streamer.startStream(path, {
       includeAudio: config.INCLUDE_AUDIO,
       hardwareAcceleration: config.HARDWARE_ACCELERATION,
     });
 
-    send(conn, { event, succeeded: true, data: 'stream_finished' });
-
-    streamer.stopStream();
-    streamer.leaveVoice();
+    if (flag) {
+      send(conn, { event, succeeded: true, data: 'stream_finished' });
+      streamer.stopStream();
+      streamer.leaveVoice();
+    }
   } catch (e) {
     console.error('Failed to start stream', e);
     send(conn, { event, succeeded: false, data: 'start_stream_failed' });

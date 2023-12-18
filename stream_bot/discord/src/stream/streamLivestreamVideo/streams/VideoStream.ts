@@ -1,9 +1,9 @@
 import { Writable } from 'stream';
 
-import { UdpClient } from '$stream/Streamer/client/UdpClient';
+import { UdpClient } from '$stream';
 
 export class VideoStream extends Writable {
-  public udp: UdpClient;
+  public udb: () => UdpClient | undefined;
 
   public count: number;
 
@@ -17,10 +17,10 @@ export class VideoStream extends Writable {
 
   private _frameBuffer: Buffer[];
 
-  constructor(udp: UdpClient, fps: number, onWrite: (time: number) => void) {
+  constructor(udb: () => UdpClient | undefined, fps: number, onWrite: (time: number) => void) {
     super();
 
-    this.udp = udp;
+    this.udb = udb;
     this.count = 0;
     this.sleepTime = 1000 / fps;
     this.onWrite = onWrite;
@@ -51,7 +51,7 @@ export class VideoStream extends Writable {
 
     this._frameBuffer.push(frame);
 
-    if (!this._paused) this.udp.sendVideoFrame(this._frameBuffer.shift() ?? frame);
+    if (!this._paused) this.udb()?.sendVideoFrame(this._frameBuffer.shift() ?? frame);
 
     const next = (this.count + 1) * this.sleepTime - (Date.now() - this.startTime);
     if (!this._paused) this.onWrite(next);

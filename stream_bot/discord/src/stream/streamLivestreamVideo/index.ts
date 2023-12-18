@@ -27,9 +27,13 @@ const initial: StreamOptions = {
   fps: 30,
 };
 
-export const streamLivestreamVideo = (input: string | Readable, mediaUdp: UdpClient, options: StreamOptions = initial) => {
-  const audioStream: AudioStream = new AudioStream(mediaUdp);
-  const videoStream: VideoStream = new VideoStream(mediaUdp, options.fps, (time) => {
+export const streamLivestreamVideo = (
+  input: string | Readable,
+  udb: () => UdpClient | undefined,
+  options: StreamOptions = initial
+) => {
+  const audioStream: AudioStream = new AudioStream(udb);
+  const videoStream: VideoStream = new VideoStream(udb, options.fps, (time) => {
     options.onProgress(time);
   });
 

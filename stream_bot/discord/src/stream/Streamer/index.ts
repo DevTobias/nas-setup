@@ -70,14 +70,15 @@ export class Streamer {
     return this._client;
   }
 
-  public joinVoice(guild_id: string, channel_id: string): Promise<UdpClient> {
+  public joinVoice(guild_id: string, channel_id: string): Promise<UdpClient | undefined> {
+    if (this._voiceConnection) return Promise.resolve(this._udbClient);
+
     return new Promise<UdpClient>((resolve) => {
       this._voiceConnection = new VoiceConnection(
         guild_id,
         this.client.user!.id,
         channel_id,
         (voiceUdp) => {
-          this.resetStream();
           this._udbClient = voiceUdp;
           resolve(voiceUdp);
         },
@@ -115,7 +116,6 @@ export class Streamer {
         this.client.user!.id,
         this._voiceConnection!.channelId,
         (voiceUdp) => {
-          this.resetStream();
           this._udbClient = voiceUdp;
           resolve(voiceUdp);
         },
@@ -137,7 +137,7 @@ export class Streamer {
     };
 
     try {
-      const [streamPromise, videoStream, audioStream] = streamLivestreamVideo(path, this._udbClient, {
+      const [streamPromise, videoStream, audioStream] = streamLivestreamVideo(path, () => this._udbClient, {
         includeAudio: options.includeAudio,
         fps: this._options.fps,
         hardwareAcceleration: options.hardwareAcceleration,
@@ -147,8 +147,9 @@ export class Streamer {
       this._audioStream = audioStream;
       this._videoStream = videoStream;
       await streamPromise;
+      return true;
     } catch (e) {
-      // Everything should already be cleaned up
+      return false;
     } finally {
       this._udbClient?.mediaConnection.setSpeaking(false);
       this._udbClient?.mediaConnection.setVideoStatus(false);
@@ -156,7 +157,7 @@ export class Streamer {
     }
   }
 
-  public stopStream(): void {
+  public stopStream(soft = false): void {
     try {
       const stream = this._voiceConnection?.streamConnection;
       if (!stream || !this._voiceConnection) return;
@@ -168,7 +169,8 @@ export class Streamer {
       // If this fails, the stream is already stopped
     } finally {
       if (this._voiceConnection?.streamConnection) this._voiceConnection.streamConnection = undefined;
-      this.resetStream();
+      if (!soft) this.resetStream();
+      this._udbClient = undefined;
     }
   }
 
@@ -178,17 +180,24 @@ export class Streamer {
     this._paused = true;
     this._audioStream?.pause();
     this._videoStream?.pause();
+
+    this.stopStream(true);
   }
 
   public resumeStream(): void {
-    if (!this._udbClient || !this._paused) return;
+    if (!this._paused) return;
 
-    this._paused = false;
-    this._audioStream?.resume();
-    this._videoStream?.resume();
+    this.createStream().then(() => {
+      this._udbClient?.mediaConnection.setSpeaking(true);
+      this._udbClient?.mediaConnection.setVideoStatus(true);
+      this._paused = false;
+      this._audioStream?.resume();
+      this._videoStream?.resume();
+    });
   }
 
   public leaveVoice(): void {
+    console.log('leave');
     try {
       this._voiceConnection?.stop();
       this.sendOpcode(GatewayOpCodes.VOICE_STATE_UPDATE, {

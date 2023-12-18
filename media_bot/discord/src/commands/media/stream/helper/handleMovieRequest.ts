@@ -20,12 +20,7 @@ export const handleMovieRequest = async (
     return interaction.editReply('You must be in a voice channel to start a stream ❌');
   }
 
-  socket.send(
-    JSON.stringify({
-      event: 'start',
-      data: { mediaPath: movie.file, channelId, guildId: interaction.guildId!, type: 'movie' },
-    })
-  );
+  send(socket, { event: 'start', data: { mediaPath: movie.file, channelId, guildId: interaction.guildId!, type: 'movie' } });
 
   pauseBtn.setDisabled(false);
   stopBtn.setDisabled(false);
@@ -43,6 +38,12 @@ export const handleMovieRequest = async (
     if (event.customId === 'stop') send(socket, { event: 'stop' });
     if (event.customId === 'pause') send(socket, { event: 'pause' });
     if (event.customId === 'resume') send(socket, { event: 'resume' });
+    if (event.customId === 'restart') {
+      send(socket, {
+        event: 'restart',
+        data: { mediaPath: movie.file, channelId, guildId: interaction.guildId!, type: 'movie' },
+      });
+    }
   });
 
   socket.on('message', async (data) => {
