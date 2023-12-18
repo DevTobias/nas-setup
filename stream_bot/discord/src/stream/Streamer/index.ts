@@ -5,6 +5,8 @@ import { StreamConnection } from '$stream/Streamer/client/connections/StreamConn
 import { VoiceConnection } from '$stream/Streamer/client/connections/VoiceConnection';
 import { UdpClient } from '$stream/Streamer/client/UdpClient';
 import { GatewayOpCodes } from '$stream/Streamer/codes/GatewayOpCodes';
+import { AudioStream } from '$stream/streamLivestreamVideo/streams/AudioStream';
+import { VideoStream } from '$stream/streamLivestreamVideo/streams/VideoStream';
 
 interface Data {
   type: string;
@@ -49,6 +51,10 @@ export class Streamer {
   private _currentPlaytime = 0;
 
   private _paused = false;
+
+  private _audioStream: AudioStream | undefined;
+
+  private _videoStream: VideoStream | undefined;
 
   constructor(client: Client, options: StreamOptions) {
     this._client = client;
@@ -131,21 +137,23 @@ export class Streamer {
     };
 
     try {
-      await streamLivestreamVideo(path, this._udbClient, {
+      const [streamPromise, videoStream, audioStream] = streamLivestreamVideo(path, this._udbClient, {
         includeAudio: options.includeAudio,
         fps: this._options.fps,
         hardwareAcceleration: options.hardwareAcceleration,
         onEvent: streamCallback,
         onProgress: (time) => (this._currentPlaytime += time),
       });
+      this._audioStream = audioStream;
+      this._videoStream = videoStream;
+      await streamPromise;
     } catch (e) {
-      console.log(e);
+      // Everything should already be cleaned up
     } finally {
-      this._udbClient.mediaConnection.setSpeaking(false);
-      this._udbClient.mediaConnection.setVideoStatus(false);
+      this._udbClient?.mediaConnection.setSpeaking(false);
+      this._udbClient?.mediaConnection.setVideoStatus(false);
+      this.resetStream();
     }
-
-    this.resetStream();
   }
 
   public stopStream(): void {
@@ -168,18 +176,16 @@ export class Streamer {
     if (!this._udbClient || this._paused) return;
 
     this._paused = true;
-    this._udbClient.mediaConnection.setSpeaking(false);
-    this._udbClient.mediaConnection.setVideoStatus(false);
-    this._command?.kill('SIGSTOP');
+    this._audioStream?.pause();
+    this._videoStream?.pause();
   }
 
   public resumeStream(): void {
     if (!this._udbClient || !this._paused) return;
 
     this._paused = false;
-    this._udbClient.mediaConnection.setSpeaking(true);
-    this._udbClient.mediaConnection.setVideoStatus(true);
-    this._command?.kill('SIGCONT');
+    this._audioStream?.resume();
+    this._videoStream?.resume();
   }
 
   public leaveVoice(): void {

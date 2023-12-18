@@ -94,7 +94,7 @@ export class UdpClient {
       this.ready = false;
       this._socket?.disconnect();
     } catch (e) {
-      console.error(e);
+      // Already disconnected socket
     }
   }
 

@@ -33,7 +33,7 @@ export const streamLivestreamVideo = (input: string | Readable, mediaUdp: UdpCli
     options.onProgress(time);
   });
 
-  return new Promise<void>((resolve, reject) => {
+  const streamPromise = new Promise<void>((resolve, reject) => {
     const videoOutput: Transform = new H264Transformer();
 
     let command: FfmpegCommand | undefined;
@@ -51,9 +51,18 @@ export const streamLivestreamVideo = (input: string | Readable, mediaUdp: UdpCli
         .addOption('-analyzeduration', '0')
         .on('start', () => options.onEvent('started', command))
         .on('end', () => {
-          command = undefined;
-          options.onEvent('ended', command);
-          resolve();
+          const tryToEnd = () => {
+            if (videoStream.stillFramesRemaining || audioStream.stillFramesRemaining) {
+              setTimeout(() => tryToEnd(), 1000);
+              return;
+            }
+
+            command = undefined;
+            options.onEvent('ended', command);
+            resolve();
+          };
+
+          tryToEnd();
         })
         .on('error', handleError)
         .on('stderr', handleError);
@@ -100,4 +109,6 @@ export const streamLivestreamVideo = (input: string | Readable, mediaUdp: UdpCli
       handleError(e);
     }
   });
+
+  return [streamPromise, videoStream, audioStream] as const;
 };

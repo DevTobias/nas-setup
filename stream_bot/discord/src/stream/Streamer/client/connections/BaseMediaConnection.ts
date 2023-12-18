@@ -97,6 +97,7 @@ export abstract class BaseMediaConnection {
   stop(): void {
     clearInterval(this.interval);
     this.status.started = false;
+
     this.ws?.close();
     this.udp?.stop();
   }
