@@ -57,6 +57,8 @@ export class Streamer {
 
   private _videoStream: VideoStream | undefined;
 
+  private _onProgress: ((time: number) => void) | undefined;
+
   constructor(client: Client, options: StreamOptions) {
     this._client = client;
 
@@ -125,6 +127,10 @@ export class Streamer {
     });
   }
 
+  public onProgress(callback: (time: number) => void): void {
+    this._onProgress = callback;
+  }
+
   public async startStream(path: string, options: PlayerConfig) {
     if (!this._udbClient) {
       throw new Error('cannot start video without creating a stream first');
@@ -143,7 +149,10 @@ export class Streamer {
         fps: this._options.fps,
         hardwareAcceleration: options.hardwareAcceleration,
         onEvent: streamCallback,
-        onProgress: (time) => (this._currentPlaytime += time),
+        onProgress: (time) => {
+          this._currentPlaytime += time;
+          this._onProgress?.(this._currentPlaytime);
+        },
       });
       this._audioStream = audioStream;
       this._videoStream = videoStream;

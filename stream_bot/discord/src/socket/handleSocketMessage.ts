@@ -15,6 +15,9 @@ const messageSchema = z.object({
 });
 
 export const handleSocketMessage = async (streamer: Streamer, conn: SocketStream, msg: string) => {
+  let lastEventTime = 0;
+  const timeThreshold = 10000;
+
   const parsed = messageSchema.safeParse(JSON.parse(msg));
 
   if (!parsed.success) {
@@ -23,6 +26,14 @@ export const handleSocketMessage = async (streamer: Streamer, conn: SocketStream
   }
 
   const { event, data } = parsed.data;
+
+  streamer.onProgress((progress) => {
+    const currentTime = Date.now();
+    if (currentTime - lastEventTime >= timeThreshold) {
+      send(conn, { event: 'progress', succeeded: true, data: Math.round(progress).toString() });
+      lastEventTime = currentTime;
+    }
+  });
 
   switch (event) {
     case 'start':

@@ -6,7 +6,7 @@ export const createMediaControlButtons = () => {
     emoji: '🔄',
     label: ' Neustarten',
     style: ButtonStyle.Secondary,
-    disabled: false,
+    disabled: true,
   });
 
   const pauseBtn = new ButtonBuilder({
@@ -25,8 +25,16 @@ export const createMediaControlButtons = () => {
     disabled: true,
   });
 
-  const actions = new ActionRowBuilder<ButtonBuilder>().addComponents(restartBtn, pauseBtn, stopBtn);
-  return { actions, restartBtn, pauseBtn, stopBtn };
+  const leaveBtn = new ButtonBuilder({
+    custom_id: 'leave',
+    emoji: '🚪',
+    label: ' Verlassen',
+    style: ButtonStyle.Secondary,
+    disabled: true,
+  });
+
+  const actions = new ActionRowBuilder<ButtonBuilder>().addComponents(restartBtn, pauseBtn, stopBtn, leaveBtn);
+  return { actions, restartBtn, pauseBtn, stopBtn, leaveBtn };
 };
 
 export type MediaControlButtons = ReturnType<typeof createMediaControlButtons>;

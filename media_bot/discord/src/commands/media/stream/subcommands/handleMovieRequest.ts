@@ -9,21 +9,21 @@ import { parsePayload, send } from '$utils/ws';
 export const handleMovieRequest = async (
   interaction: CommandInteraction,
   socket: WebSocket,
-  { actions, pauseBtn, stopBtn }: MediaControlButtons,
+  { actions, pauseBtn, stopBtn, leaveBtn, restartBtn }: MediaControlButtons,
   movie: Movie
 ) => {
   const movieEmbed = createMovieEmbed(movie, interaction.user);
 
   const channelId = interaction.inGuild() ? (interaction.member as GuildMember).voice.channelId : null;
+  if (!channelId) return interaction.editReply('You must be in a voice channel to start a stream ❌');
 
-  if (!channelId) {
-    return interaction.editReply('You must be in a voice channel to start a stream ❌');
-  }
-
-  send(socket, { event: 'start', data: { mediaPath: movie.file, channelId, guildId: interaction.guildId!, type: 'movie' } });
+  const startPayload = { mediaPath: movie.file, channelId, guildId: interaction.guildId!, type: 'movie' };
+  send(socket, { event: 'start', data: startPayload });
 
   pauseBtn.setDisabled(false);
   stopBtn.setDisabled(false);
+  leaveBtn.setDisabled(false);
+  restartBtn.setDisabled(false);
 
   const response = await interaction.editReply({ embeds: [movieEmbed], components: [actions as never] });
 
@@ -38,44 +38,51 @@ export const handleMovieRequest = async (
     if (event.customId === 'stop') send(socket, { event: 'stop' });
     if (event.customId === 'pause') send(socket, { event: 'pause' });
     if (event.customId === 'resume') send(socket, { event: 'resume' });
-    if (event.customId === 'restart') {
-      send(socket, {
-        event: 'restart',
-        data: { mediaPath: movie.file, channelId, guildId: interaction.guildId!, type: 'movie' },
-      });
-    }
+    if (event.customId === 'leave') send(socket, { event: 'leave' });
+    if (event.customId === 'restart') send(socket, { event: 'restart', data: startPayload });
   });
 
   socket.on('message', async (data) => {
+    let title: string | undefined;
+    let progressInMs = 0;
+    let components = [actions];
+
     const payload = parsePayload(data);
 
-    if (payload.event === 'stop' && payload.succeeded) {
+    if (!payload.succeeded) {
+      return interaction.followUp({ content: `Aktion konnte nicht ausgeführt werden. ❌`, ephemeral: true });
+    }
+
+    if (payload.event === 'progress') {
+      progressInMs = parseInt(payload.data, 10);
+    }
+
+    if (payload.event === 'stop') {
       pauseBtn.setDisabled(true);
       stopBtn.setDisabled(true);
-      await interaction.editReply({ embeds: [movieEmbed], components: [actions as never] });
     }
 
-    if (payload.event === 'pause' && payload.succeeded) {
+    if (payload.event === 'restart') {
+      pauseBtn.setDisabled(false);
+      stopBtn.setDisabled(false);
+    }
+
+    if (payload.event === 'pause') {
       pauseBtn.setLabel('Fortsetzen').setEmoji('▶️').setDisabled(false).setCustomId('resume');
-      await interaction.editReply({ embeds: [movieEmbed], components: [actions as never] });
     }
 
-    if (payload.event === 'resume' && payload.succeeded) {
+    if (payload.event === 'resume') {
       pauseBtn.setLabel('Pausieren').setEmoji('⏸️').setDisabled(false).setCustomId('pause');
-      await interaction.editReply({ embeds: [movieEmbed], components: [actions as never] });
     }
 
-    if (payload.event === 'start' && !payload.succeeded) {
-      await interaction.followUp({
-        content: `Stream für \`${movie.title} (${movie.release_date.getFullYear()})\` konnte nicht gestartet werden ❌`,
-        ephemeral: true,
-      });
+    if (payload.event === 'start' || payload.event === 'restart' || payload.event === 'leave') {
+      title = `Stream für \`${movie.title} (${movie.release_date.getFullYear()})\` beendet`;
+      components = [];
     }
 
-    if ((payload.event === 'stop' && payload.succeeded) || (payload.event === 'start' && payload.succeeded)) {
-      await interaction.editReply({
-        embeds: [movieEmbed.setTitle(`Stream für \`${movie.title} (${movie.release_date.getFullYear()})\` beendet`)],
-      });
-    }
+    await interaction.editReply({
+      embeds: [createMovieEmbed(movie, interaction.user, { title, progress: Math.floor(progressInMs / 1000 / 60) })],
+      components,
+    });
   });
 };

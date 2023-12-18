@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 
 import { createMediaControlButtons } from '$commands/media/stream/helper/createMediaControlButtons';
-import { handleMovieRequest } from '$commands/media/stream/helper/handleMovieRequest';
+import { handleMovieRequest } from '$commands/media/stream/subcommands/handleMovieRequest';
 import { config } from '$config';
 import { Command } from '$utils/discord/command';
 import { trunc } from '$utils/trunc';
