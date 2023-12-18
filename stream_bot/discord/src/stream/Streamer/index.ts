@@ -1,5 +1,6 @@
 import { Client } from 'discord.js-selfbot-v13';
 
+import { Command, streamLivestreamVideo } from '$stream';
 import { StreamConnection } from '$stream/Streamer/client/connections/StreamConnection';
 import { VoiceConnection } from '$stream/Streamer/client/connections/VoiceConnection';
 import { UdpClient } from '$stream/Streamer/client/UdpClient';
@@ -29,12 +30,25 @@ type StreamOptions = {
   height: number;
 };
 
+type PlayerConfig = {
+  includeAudio: boolean;
+  hardwareAcceleration: boolean;
+};
+
 export class Streamer {
   private _voiceConnection?: VoiceConnection;
 
   private _client: Client;
 
   private _options: StreamOptions;
+
+  private _udbClient?: UdpClient;
+
+  private _command?: Command;
+
+  private _currentPlaytime = 0;
+
+  private _paused = false;
 
   constructor(client: Client, options: StreamOptions) {
     this._client = client;
@@ -50,18 +64,6 @@ export class Streamer {
     return this._client;
   }
 
-  public get voiceConnection(): VoiceConnection | undefined {
-    return this._voiceConnection;
-  }
-
-  public sendOpcode(code: number, data: Partial<Data>): void {
-    // @ts-ignore
-    this.client.ws.broadcast({
-      op: code,
-      d: data,
-    });
-  }
-
   public joinVoice(guild_id: string, channel_id: string): Promise<UdpClient> {
     return new Promise<UdpClient>((resolve) => {
       this._voiceConnection = new VoiceConnection(
@@ -69,26 +71,46 @@ export class Streamer {
         this.client.user!.id,
         channel_id,
         (voiceUdp) => {
+          this.resetStream();
+          this._udbClient = voiceUdp;
           resolve(voiceUdp);
         },
         this._options
       );
 
-      this.signalVideo(guild_id, channel_id, false);
+      this.sendOpcode(GatewayOpCodes.VOICE_STATE_UPDATE, {
+        guild_id,
+        channel_id,
+        self_mute: false,
+        self_deaf: true,
+        self_video: false,
+      });
     });
   }
 
   public createStream(): Promise<UdpClient> {
     return new Promise<UdpClient>((resolve, reject) => {
-      if (!this.voiceConnection) reject(new Error('cannot start stream without first joining voice channel'));
+      if (!this._voiceConnection) reject(new Error('cannot start stream without first joining voice channel'));
 
-      this.signalStream(this.voiceConnection!.guildId, this.voiceConnection!.channelId);
+      this.sendOpcode(GatewayOpCodes.STREAM_CREATE, {
+        type: 'guild',
+        guild_id: this._voiceConnection!.guildId,
+        channel_id: this._voiceConnection!.channelId,
+        preferred_region: undefined,
+      });
 
-      this.voiceConnection!.streamConnection = new StreamConnection(
-        this.voiceConnection!.guildId,
+      this.sendOpcode(GatewayOpCodes.STREAM_SET_PAUSED, {
+        stream_key: `guild:${this._voiceConnection!.guildId}:${this._voiceConnection!.channelId}:${this.client.user!.id}`,
+        paused: false,
+      });
+
+      this._voiceConnection!.streamConnection = new StreamConnection(
+        this._voiceConnection!.guildId,
         this.client.user!.id,
-        this.voiceConnection!.channelId,
+        this._voiceConnection!.channelId,
         (voiceUdp) => {
+          this.resetStream();
+          this._udbClient = voiceUdp;
           resolve(voiceUdp);
         },
         this._options
@@ -96,96 +118,133 @@ export class Streamer {
     });
   }
 
+  public async startStream(path: string, options: PlayerConfig) {
+    if (!this._udbClient) {
+      throw new Error('cannot start video without creating a stream first');
+    }
+
+    this._udbClient.mediaConnection.setSpeaking(true);
+    this._udbClient.mediaConnection.setVideoStatus(true);
+
+    const streamCallback = (_: string, operation: Command | undefined) => {
+      this._command = operation;
+    };
+
+    try {
+      await streamLivestreamVideo(path, this._udbClient, {
+        includeAudio: options.includeAudio,
+        fps: this._options.fps,
+        hardwareAcceleration: options.hardwareAcceleration,
+        onEvent: streamCallback,
+        onProgress: (time) => (this._currentPlaytime += time),
+      });
+    } catch (e) {
+      console.log(e);
+    } finally {
+      this._udbClient.mediaConnection.setSpeaking(false);
+      this._udbClient.mediaConnection.setVideoStatus(false);
+    }
+
+    this.resetStream();
+  }
+
   public stopStream(): void {
     try {
-      const stream = this.voiceConnection?.streamConnection;
-      if (!stream) return;
+      const stream = this._voiceConnection?.streamConnection;
+      if (!stream || !this._voiceConnection) return;
       stream.stop();
-      this.signalStopStream(stream.guildId, stream.channelId);
-      this.voiceConnection.streamConnection = undefined;
+      this.sendOpcode(GatewayOpCodes.STREAM_DELETE, {
+        stream_key: `guild:${stream.guildId}:${stream.channelId}:${this.client.user!.id}`,
+      });
     } catch (e) {
       // If this fails, the stream is already stopped
+    } finally {
+      if (this._voiceConnection?.streamConnection) this._voiceConnection.streamConnection = undefined;
+      this.resetStream();
     }
   }
 
+  public pauseStream(): void {
+    if (!this._udbClient || this._paused) return;
+
+    this._paused = true;
+    this._udbClient.mediaConnection.setSpeaking(false);
+    this._udbClient.mediaConnection.setVideoStatus(false);
+    this._command?.kill('SIGSTOP');
+  }
+
+  public resumeStream(): void {
+    if (!this._udbClient || !this._paused) return;
+
+    this._paused = false;
+    this._udbClient.mediaConnection.setSpeaking(true);
+    this._udbClient.mediaConnection.setVideoStatus(true);
+    this._command?.kill('SIGCONT');
+  }
+
   public leaveVoice(): void {
-    this.voiceConnection?.stop();
-    this.signalLeaveVoice();
-    this._voiceConnection = undefined;
+    try {
+      this._voiceConnection?.stop();
+      this.sendOpcode(GatewayOpCodes.VOICE_STATE_UPDATE, {
+        guild_id: undefined,
+        channel_id: undefined,
+        self_mute: true,
+        self_deaf: false,
+        self_video: false,
+      });
+    } catch (e) {
+      // If this fails, the stream is already stopped
+    } finally {
+      this._voiceConnection = undefined;
+      this.resetStream();
+    }
   }
 
-  public signalVideo(guild_id: string, channel_id: string, video_enabled: boolean): void {
-    this.sendOpcode(GatewayOpCodes.VOICE_STATE_UPDATE, {
-      guild_id,
-      channel_id,
-      self_mute: false,
-      self_deaf: true,
-      self_video: video_enabled,
-    });
+  private resetStream(): void {
+    this._command?.kill('SIGINT');
+    this._command = undefined;
+    this._udbClient = undefined;
+    this._currentPlaytime = 0;
+    this._paused = false;
   }
 
-  public signalStream(guild_id: string, channel_id: string): void {
-    this.sendOpcode(GatewayOpCodes.STREAM_CREATE, {
-      type: 'guild',
-      guild_id,
-      channel_id,
-      preferred_region: undefined,
-    });
-
-    this.sendOpcode(GatewayOpCodes.STREAM_SET_PAUSED, {
-      stream_key: `guild:${guild_id}:${channel_id}:${this.client.user!.id}`,
-      paused: false,
-    });
-  }
-
-  public signalStopStream(guild_id: string, channel_id: string): void {
-    this.sendOpcode(GatewayOpCodes.STREAM_DELETE, {
-      stream_key: `guild:${guild_id}:${channel_id}:${this.client.user!.id}`,
-    });
-  }
-
-  public signalLeaveVoice(): void {
-    this.sendOpcode(GatewayOpCodes.VOICE_STATE_UPDATE, {
-      guild_id: undefined,
-      channel_id: undefined,
-      self_mute: true,
-      self_deaf: false,
-      self_video: false,
-    });
+  private sendOpcode(code: number, data: Partial<Data>): void {
+    // @ts-ignore
+    this.client.ws.broadcast({ op: code, d: data });
   }
 
   private handleGatewayEvent(event: string, data: Partial<Data>): void {
     switch (event) {
       case 'VOICE_STATE_UPDATE': {
         if (data.user_id === this.client.user!.id) {
-          this.voiceConnection?.setSession(data.session_id!);
+          this._voiceConnection?.setSession(data.session_id!);
         }
         break;
       }
       case 'VOICE_SERVER_UPDATE': {
-        if (data.guild_id !== this.voiceConnection?.guildId) return;
-        this.voiceConnection?.setTokens(data.endpoint!, data.token!);
+        if (data.guild_id !== this._voiceConnection?.guildId) return;
+        this._voiceConnection?.setTokens(data.endpoint!, data.token!);
         break;
       }
       case 'STREAM_CREATE': {
         const [, guildId, , userId] = data.stream_key!.split(':');
 
-        if (this.voiceConnection?.guildId !== guildId) return;
+        if (this._voiceConnection?.guildId !== guildId) return;
 
-        if (userId === this.client.user!.id && this.voiceConnection.streamConnection) {
-          this.voiceConnection.streamConnection.serverId = data.rtc_server_id!;
-          this.voiceConnection.streamConnection.streamKey = data.stream_key!;
-          this.voiceConnection.streamConnection.setSession(this.voiceConnection.session_id);
+        if (userId === this.client.user!.id && this._voiceConnection.streamConnection) {
+          this._voiceConnection.streamConnection.serverId = data.rtc_server_id!;
+          this._voiceConnection.streamConnection.streamKey = data.stream_key!;
+          this._voiceConnection.streamConnection.setSession(this._voiceConnection.session_id);
         }
         break;
       }
       case 'STREAM_SERVER_UPDATE': {
         const [, guildId, , userId] = data.stream_key!.split(':');
 
-        if (this.voiceConnection?.guildId !== guildId) return;
+        if (this._voiceConnection?.guildId !== guildId) return;
 
         if (userId === this.client.user!.id) {
-          this.voiceConnection.streamConnection!.setTokens(data.endpoint!, data.token!);
+          this._voiceConnection.streamConnection!.setTokens(data.endpoint!, data.token!);
         }
         break;
       }

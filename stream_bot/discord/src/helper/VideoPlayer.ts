@@ -31,15 +31,13 @@ export class VideoPlayer {
     };
 
     try {
-      const res = await streamLivestreamVideo(this.url, udp, {
+      await streamLivestreamVideo(this.url, udp, {
         includeAudio: this.options.includeAudio,
         fps: this.options.fps,
         hardwareAcceleration: this.options.hardwareAcceleration,
         onEvent: streamCallback,
         onProgress: (time) => (this.currentPlaytime += time),
       });
-
-      console.log(`Finished playing video ${res}`);
     } catch (e) {
       console.log(e);
     } finally {

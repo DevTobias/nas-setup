@@ -28,11 +28,13 @@ const initial: StreamOptions = {
 };
 
 export const streamLivestreamVideo = (input: string | Readable, mediaUdp: UdpClient, options: StreamOptions = initial) => {
+  const audioStream: AudioStream = new AudioStream(mediaUdp);
+  const videoStream: VideoStream = new VideoStream(mediaUdp, options.fps, (time) => {
+    options.onProgress(time);
+  });
+
   return new Promise<void>((resolve, reject) => {
     const videoOutput: Transform = new H264Transformer();
-    const videoStream: VideoStream = new VideoStream(mediaUdp, options.fps, (time) => {
-      options.onProgress(time);
-    });
 
     let command: FfmpegCommand | undefined;
 
@@ -77,7 +79,6 @@ export const streamLivestreamVideo = (input: string | Readable, mediaUdp: UdpCli
       videoOutput.pipe(videoStream, { end: false });
 
       if (options.includeAudio) {
-        const audioStream: AudioStream = new AudioStream(mediaUdp);
         const opus = new prism.opus.Encoder({ channels: 2, rate: 48000, frameSize: 960 });
 
         command
