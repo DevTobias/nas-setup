@@ -46,7 +46,9 @@ export const handleSocketMessage = async (streamer: Streamer, conn: SocketStream
       return handleResumeEvent('resume', conn, streamer);
     case 'restart':
       handleStopEvent('stop', conn, streamer);
-      return setTimeout(() => handleStartEvent('restart', conn, streamer, data), 1000);
+      return new Promise<ReturnType<typeof handleStartEvent>>((resolve) => {
+        setTimeout(() => resolve(handleStartEvent('restart', conn, streamer, data)), 1000);
+      });
     case 'leave':
       return handleLeaveEvent('leave', conn, streamer);
     default:

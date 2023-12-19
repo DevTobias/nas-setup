@@ -7,7 +7,7 @@ import { send } from '$helper/ws';
 
 const startEventSchema = z.object({
   type: z.enum(['movie', 'tvshow']),
-  startTime: z.string(),
+  startTime: z.string().optional(),
   mediaPath: z.string(),
   channelId: z.string(),
   guildId: z.string(),

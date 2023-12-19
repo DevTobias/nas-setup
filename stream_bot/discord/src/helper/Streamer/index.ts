@@ -37,7 +37,7 @@ type StreamOptions = {
 type PlayerConfig = {
   includeAudio: boolean;
   hardwareAcceleration: boolean;
-  startTime: string;
+  startTime?: string;
 };
 
 export class Streamer {

@@ -7,12 +7,13 @@ import { BaseMediaStore } from '$features/media/helper/BaseMediaStore';
 
 export const tvShowSchema = z.object({
   id: z.number(),
+  imdb_id: z.string(),
   name: z.string(),
   overview: z.string(),
   vote_average: z.number(),
   status: z.string(),
-  first_air_date: z.string(),
-  last_air_date: z.string(),
+  first_air_date: z.string().transform((val) => new Date(val)),
+  last_air_date: z.string().transform((val) => new Date(val)),
   number_of_episodes: z.number(),
   number_of_seasons: z.number(),
   poster_path: z.string(),
@@ -30,6 +31,7 @@ export const tvShowSchema = z.object({
         z.object({
           episode_number: z.number(),
           name: z.string(),
+          runtime: z.number().nullable(),
           overview: z.string(),
           vote_average: z.number(),
           still_path: z.string().nullable(),
@@ -40,7 +42,11 @@ export const tvShowSchema = z.object({
   ),
 });
 
-export class TvShowStore extends BaseMediaStore<z.infer<typeof tvShowSchema>> {
+export type TvShow = z.infer<typeof tvShowSchema>;
+export type TvSeason = TvShow['seasons'][number];
+export type TvEpisode = TvSeason['episodes'][number];
+
+export class TvShowStore extends BaseMediaStore<TvShow> {
   constructor() {
     super(
       tvShowSchema.parse,
