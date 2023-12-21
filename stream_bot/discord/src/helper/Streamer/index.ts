@@ -162,12 +162,10 @@ export class Streamer {
           this._onProgress?.(this._currentPlaytime);
         },
       });
+
       this._audioStream = audioStream;
       this._videoStream = videoStream;
       await streamPromise;
-      return true;
-    } catch (e) {
-      return false;
     } finally {
       this._udbClient?.mediaConnection.setSpeaking(false);
       this._udbClient?.mediaConnection.setVideoStatus(false);
@@ -183,8 +181,6 @@ export class Streamer {
       this.sendOpcode(GatewayOpCodes.STREAM_DELETE, {
         stream_key: `guild:${stream.guildId}:${stream.channelId}:${this.client.user!.id}`,
       });
-    } catch (e) {
-      // If this fails, the stream is already stopped
     } finally {
       if (this._voiceConnection?.streamConnection) this._voiceConnection.streamConnection = undefined;
       if (!soft) this.resetStream();
@@ -224,8 +220,6 @@ export class Streamer {
         self_deaf: false,
         self_video: false,
       });
-    } catch (e) {
-      // If this fails, the stream is already stopped
     } finally {
       this._voiceConnection = undefined;
       this.resetStream();

@@ -5,6 +5,7 @@ import { Streamer } from '$helper/Streamer';
 import { send } from '$helper/ws';
 import { handleLeaveEvent } from '$socket/events/handleLeaveEvent';
 import { handlePauseEvent } from '$socket/events/handlePauseEvent';
+import { handleRestartEvent } from '$socket/events/handleRestartEvent';
 import { handleResumeEvent } from '$socket/events/handleResumeEvent';
 import { handleStartEvent } from '$socket/events/handleStartEvent';
 import { handleStopEvent } from '$socket/events/handleStopEvent';
@@ -45,10 +46,7 @@ export const handleSocketMessage = async (streamer: Streamer, conn: SocketStream
     case 'resume':
       return handleResumeEvent('resume', conn, streamer);
     case 'restart':
-      handleStopEvent('stop', conn, streamer);
-      return new Promise<ReturnType<typeof handleStartEvent>>((resolve) => {
-        setTimeout(() => resolve(handleStartEvent('restart', conn, streamer, data)), 1000);
-      });
+      return handleRestartEvent('restart', conn, streamer, data);
     case 'leave':
       return handleLeaveEvent('leave', conn, streamer);
     default:

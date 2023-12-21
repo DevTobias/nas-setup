@@ -1,7 +1,8 @@
 {
   "name": "@stream_bot/discord",
   "scripts": {
-    "dev": "esbuild src/index.ts --bundle --platform=node --packages=external --target=node14 --outdir=dist && cd dist && node index.js"
+    "dev": "esbuild src/index.ts --bundle --platform=node --packages=external --target=node20 --outdir=dist && cd dist && node index.js",
+    "build": "esbuild src/index.ts --bundle --platform=node --packages=external --target=node20 --outdir=dist --minify"
   },
   "dependencies": {
     "@discordjs/opus": "^0.9.0",

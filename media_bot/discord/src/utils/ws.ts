@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { z } from 'zod';
 
 export const parsePayload = (payload: WebSocket.RawData) => {
-  const scheme = z.object({ event: z.string(), succeeded: z.boolean(), data: z.string() });
+  const scheme = z.object({ event: z.string(), succeeded: z.boolean(), data: z.string().optional() });
   return scheme.parse(JSON.parse(payload.toString()));
 };
 

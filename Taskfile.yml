@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 tasks:
   default:
@@ -22,3 +22,9 @@ tasks:
     dir: ansible
     cmds:
       - ansible-playbook deploy.yml
+
+  test-deploy:
+    desc: Tests the docker deployment
+    cmds:
+      - docker-compose down --rmi all
+      - docker compose up -d

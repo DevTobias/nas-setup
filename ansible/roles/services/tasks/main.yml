@@ -196,6 +196,41 @@
             traefik.http.routers.dash.rule: Host(`{{ dash_host }}`)
             traefik.http.routers.dash.tls: true
 
+        media_discord_bot:
+          image: devtobias/media_bot:latest
+          container_name: service_media_discord_bot
+          restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
+          networks:
+            - infrastructure_default
+          volumes:
+            - '{{ media_path }}/series:/media/series'
+            - '{{ media_path }}/movies:/media/movies'
+          environment:
+            BOT_TOKEN: '{{ media_bot_token }}'
+            BOT_CLIENT_ID: '{{ media_bot_client_id }}'
+            TMDB_TOKEN: '{{ tmdb_token }}'
+            STREAMER_ENDPOINT: '{{ stream_bot_endpoint }}'
+
+        stream_discord_bot:
+          image: devtobias/stream_bot:latest
+          container_name: service_stream_discord_bot
+          restart: unless-stopped
+          healthcheck:
+            disable: true
+          logging:
+            driver: none
+          networks:
+            - infrastructure_default
+          volumes:
+            - '{{ media_path }}/series:/media/series'
+            - '{{ media_path }}/movies:/media/movies'
+          environment:
+            CLIENT_TOKEN: '{{ stream_bot_token }}'
+
       networks:
         infrastructure_default:
           external: true

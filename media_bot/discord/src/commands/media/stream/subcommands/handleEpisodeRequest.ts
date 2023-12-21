@@ -1,4 +1,4 @@
-import { CommandInteraction, ComponentType, GuildMember } from 'discord.js';
+import { CommandInteraction, ComponentType, GuildMember, Message } from 'discord.js';
 import { WebSocket } from 'ws';
 
 import { createEpisodeEmbed } from '$commands/media/stream/helper/createEpisodeEmbed';
@@ -7,6 +7,7 @@ import { TvEpisode, TvSeason, TvShow } from '$features/media/TvShowStore';
 import { parsePayload, send } from '$utils/ws';
 
 export const handleEpisodeRequest = async (
+  msg: Message<boolean>,
   interaction: CommandInteraction,
   socket: WebSocket,
   { actions, pauseBtn, stopBtn, leaveBtn, restartBtn }: MediaControlButtons,
@@ -15,7 +16,9 @@ export const handleEpisodeRequest = async (
   episode: TvEpisode,
   startTime?: string
 ) => {
-  const tvEmbed = createEpisodeEmbed(episode, interaction.user, {
+  const { user } = interaction;
+
+  const tvEmbed = createEpisodeEmbed(episode, user, {
     seasonNumber: season.season_number,
     fallbackDescription: episode.overview,
     fallbackBanner: tv.fan_arts?.tvthumb ?? tv.backdrop_path,
@@ -53,11 +56,7 @@ export const handleEpisodeRequest = async (
     if (event.customId === 'pause') send(socket, { event: 'pause' });
     if (event.customId === 'resume') send(socket, { event: 'resume' });
     if (event.customId === 'leave') send(socket, { event: 'leave' });
-    if (event.customId === 'restart') {
-      send(socket, { event: 'restart', data: startPayload });
-      pauseBtn.setDisabled(false);
-      stopBtn.setDisabled(false);
-    }
+    if (event.customId === 'restart') send(socket, { event: 'restart', data: startPayload });
   });
 
   socket.on('message', async (data) => {
@@ -67,22 +66,15 @@ export const handleEpisodeRequest = async (
 
     const payload = parsePayload(data);
 
-    if (!payload.succeeded) {
-      return interaction.followUp({ content: `Aktion konnte nicht ausgeführt werden. ❌`, ephemeral: true });
-    }
+    if (!payload.succeeded) return;
 
     if (payload.event === 'progress') {
-      progressInMs = parseInt(payload.data, 10);
+      progressInMs = parseInt(payload.data!, 10);
     }
 
     if (payload.event === 'stop') {
       pauseBtn.setDisabled(true);
       stopBtn.setDisabled(true);
-    }
-
-    if (payload.event === 'restart') {
-      pauseBtn.setDisabled(false);
-      stopBtn.setDisabled(false);
     }
 
     if (payload.event === 'pause') {
@@ -100,7 +92,7 @@ export const handleEpisodeRequest = async (
       socket.close();
     }
 
-    const progressEmbed = createEpisodeEmbed(episode, interaction.user, {
+    const progressEmbed = createEpisodeEmbed(episode, user, {
       seasonNumber: season.season_number,
       fallbackDescription: episode.overview,
       fallbackBanner: tv.fan_arts?.tvthumb ?? tv.backdrop_path,
@@ -108,6 +100,6 @@ export const handleEpisodeRequest = async (
       finished,
     });
 
-    await interaction.editReply({ embeds: [progressEmbed], components });
+    await msg.edit({ embeds: [progressEmbed], components });
   });
 };

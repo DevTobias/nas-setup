@@ -13,12 +13,11 @@ const streamer = new Streamer(new Client({ checkUpdate: false }), {
   maxBitrateKbps: config.BITRATE_KBPS,
 });
 
-const fastify = Fastify({ logger: false });
-
+const fastify = Fastify({ logger: true });
 fastify.register(fastifyWebSocket);
 
 streamer.client.on('ready', () => {
-  console.log(`[INFO] Client for user ${streamer.client.user!.tag} is ready`);
+  fastify.log.info(`Client for user ${streamer.client.user!.tag} is ready`);
 });
 
 fastify.register(async (server) => {
@@ -27,13 +26,8 @@ fastify.register(async (server) => {
   });
 });
 
-fastify.listen({ port: config.PORT }, (err, address) => {
-  if (err) {
-    console.error(err);
-    process.exit(1);
-  }
-
-  console.log(`[INFO] Server listening at ${address}`);
+fastify.listen({ port: config.PORT, host: '0.0.0.0' }, (err, address) => {
+  fastify.log.info(err ?? `Server listening at ${address}`);
 });
 
 streamer.client.login(config.CLIENT_TOKEN);

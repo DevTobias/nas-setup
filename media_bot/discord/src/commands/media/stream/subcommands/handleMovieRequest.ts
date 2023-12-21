@@ -1,4 +1,4 @@
-import { CommandInteraction, ComponentType, GuildMember } from 'discord.js';
+import { CommandInteraction, ComponentType, GuildMember, Message } from 'discord.js';
 import { WebSocket } from 'ws';
 
 import { MediaControlButtons } from '$commands/media/stream/helper/createMediaControlButtons';
@@ -7,13 +7,15 @@ import { Movie } from '$features/media/MovieStore';
 import { parsePayload, send } from '$utils/ws';
 
 export const handleMovieRequest = async (
+  msg: Message<boolean>,
   interaction: CommandInteraction,
   socket: WebSocket,
   { actions, pauseBtn, stopBtn, leaveBtn, restartBtn }: MediaControlButtons,
   movie: Movie,
   startTime?: string
 ) => {
-  const movieEmbed = createMovieEmbed(movie, interaction.user);
+  const { user } = interaction;
+  const movieEmbed = createMovieEmbed(movie, user);
 
   const channelId = interaction.inGuild() ? (interaction.member as GuildMember).voice.channelId : null;
   if (!channelId) return interaction.editReply('You must be in a voice channel to start a stream ❌');
@@ -21,7 +23,7 @@ export const handleMovieRequest = async (
   const startPayload = {
     mediaPath: movie.file,
     channelId,
-    guildId: interaction.guildId!,
+    guildId: msg.guildId!,
     type: 'movie',
     startTime,
   };
@@ -47,7 +49,11 @@ export const handleMovieRequest = async (
     if (event.customId === 'pause') send(socket, { event: 'pause' });
     if (event.customId === 'resume') send(socket, { event: 'resume' });
     if (event.customId === 'leave') send(socket, { event: 'leave' });
-    if (event.customId === 'restart') send(socket, { event: 'restart', data: startPayload });
+    if (event.customId === 'restart') {
+      send(socket, { event: 'restart', data: startPayload });
+      pauseBtn.setDisabled(false);
+      stopBtn.setDisabled(false);
+    }
   });
 
   socket.on('message', async (data) => {
@@ -57,22 +63,15 @@ export const handleMovieRequest = async (
 
     const payload = parsePayload(data);
 
-    if (!payload.succeeded) {
-      return interaction.followUp({ content: `Aktion konnte nicht ausgeführt werden. ❌`, ephemeral: true });
-    }
+    if (!payload.succeeded) return;
 
     if (payload.event === 'progress') {
-      progressInMs = parseInt(payload.data, 10);
+      progressInMs = parseInt(payload.data!, 10);
     }
 
     if (payload.event === 'stop') {
       pauseBtn.setDisabled(true);
       stopBtn.setDisabled(true);
-    }
-
-    if (payload.event === 'restart') {
-      pauseBtn.setDisabled(false);
-      stopBtn.setDisabled(false);
     }
 
     if (payload.event === 'pause') {
@@ -90,8 +89,8 @@ export const handleMovieRequest = async (
       socket.close();
     }
 
-    await interaction.editReply({
-      embeds: [createMovieEmbed(movie, interaction.user, { title, progress: Math.floor(progressInMs / 1000 / 60) })],
+    await msg.edit({
+      embeds: [createMovieEmbed(movie, user, { title, progress: Math.floor(progressInMs / 1000 / 60) })],
       components,
     });
   });

@@ -25,7 +25,7 @@ export const Stream: Command = {
     .addStringOption((option) => option.setName('name').setDescription('Name der Serie oder des Films.').setRequired(true))
     .addStringOption((option) => option.setName('start').setDescription('Start des Mediums im Format [[hh:]mm:]ss[.xxx].')),
   run: async ({ movieStore, tvShowStore }, interaction) => {
-    await interaction.deferReply();
+    const msg = await interaction.deferReply({ fetchReply: true });
 
     const type = interaction.options.get('type')!.value!.toString() as 'tv_show' | 'movie';
     const name = interaction.options.get('name')!.value!.toString();
@@ -41,7 +41,7 @@ export const Stream: Command = {
         return interaction.editReply({ content: `Der Film **${name}** konnte nicht gefunden werden` });
       }
 
-      return handleMovieRequest(interaction, socket, controlActions, movie.meta, start);
+      return handleMovieRequest(msg, interaction, socket, controlActions, movie.meta, start);
     }
 
     if (type === 'tv_show') {
@@ -89,7 +89,7 @@ export const Stream: Command = {
         });
       });
 
-      return handleEpisodeRequest(interaction, socket, controlActions, tv.meta, selectedSeason, selectedEpisode, start);
+      return handleEpisodeRequest(msg, interaction, socket, controlActions, tv.meta, selectedSeason, selectedEpisode, start);
     }
   },
 };

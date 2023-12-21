@@ -16,7 +16,6 @@ export const configSchema = object({
   HARDWARE_ACCELERATION: boolean().default(false),
 
   PORT: number().default(3000),
-  HOST: string().default('localhost'),
 });
 
 export const config = configSchema.parse(process.env);

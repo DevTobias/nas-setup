@@ -5,6 +5,7 @@
   "scripts": {
     "start": "pnpm -r --filter discord run",
     "upgrade": "pnpm -r upgrade --latest",
-    "clean": "pnpm dlx rimraf **/dist **/node_modules"
+    "clean": "pnpm dlx rimraf **/dist **/node_modules",
+    "docker:build": "docker build -t devtobias/stream_bot:latest ."
   }
 }

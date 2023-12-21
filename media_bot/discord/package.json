@@ -1,7 +1,8 @@
 {
   "name": "@media_bot/discord",
   "scripts": {
-    "dev": "nodemon --watch src --exec 'esbuild src/index.ts --bundle --packages=external --platform=node --target=node16 --outdir=dist --sourcemap --minify && cd dist && node index.js'"
+    "dev": "nodemon --watch src --exec 'esbuild src/index.ts --bundle --packages=external --platform=node --target=node16 --outdir=dist --sourcemap --minify && cd dist && node index.js'",
+    "build": "esbuild src/index.ts --bundle --platform=node --packages=external --target=node16 --outdir=dist --minify"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.44",
