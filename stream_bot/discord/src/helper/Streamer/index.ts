@@ -76,6 +76,8 @@ export class Streamer {
   }
 
   public joinVoice(guild_id: string, channel_id: string): Promise<UdpClient | undefined> {
+    this.resetStream();
+
     if (this._voiceConnection) return Promise.resolve(this._udbClient);
 
     return new Promise<UdpClient>((resolve) => {
@@ -226,7 +228,7 @@ export class Streamer {
     }
   }
 
-  private resetStream(): void {
+  public resetStream(): void {
     this._command?.kill('SIGINT');
     this._command = undefined;
     this._udbClient = undefined;

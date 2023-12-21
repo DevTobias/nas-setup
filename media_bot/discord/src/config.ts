@@ -12,4 +12,8 @@ export const configSchema = object({
   STREAMER_ENDPOINT: string(),
 });
 
+export const emotes = {
+  live: '<a:streaming:1186036751454720182>',
+};
+
 export const config = configSchema.parse(process.env);

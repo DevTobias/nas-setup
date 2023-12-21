@@ -46,7 +46,10 @@ export const streamLivestreamVideo = (
     const handleError = (err: Error | unknown) => {
       command = undefined;
       options.onEvent('error', command);
-      reject(new Error(`cannot play video ${err as Error}`));
+
+      if (!err?.toString().includes('255')) {
+        reject(new Error(`cannot play video ${err as Error}`));
+      }
     };
 
     try {
