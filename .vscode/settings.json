@@ -8,6 +8,7 @@
   },
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": true,
+  "terminal.integrated.gpuAcceleration": "off",
 
   //! Explorer
   "explorer.fileNesting.enabled": true,
@@ -28,7 +29,8 @@
   "files.exclude": {
     "**/__pycache__": true,
     "**/node_modules": true,
-    "**/pnpm-lock.yaml": true
+    "**/pnpm-lock.yaml": true,
+    "**/.venv": true
   },
 
   //! Python

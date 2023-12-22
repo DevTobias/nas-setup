@@ -4,7 +4,7 @@ from .process import ProcessManager
 from .ripper import BlueRayRipper
 
 
-def run():
+def main():
     config = Config("autorip/autorip.toml")
     logger = Logger(config)
     process_manager = ProcessManager(logger)

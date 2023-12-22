@@ -5,6 +5,9 @@ description = "Automatic Ripping Machine"
 authors = ["DevTobias <tobi.kaerst@gmx.de>"]
 packages = [{ include = "autorip" }]
 
+[tool.poetry.scripts]
+start = "autorip:main"
+
 [tool.isort]
 profile = "black"
 
