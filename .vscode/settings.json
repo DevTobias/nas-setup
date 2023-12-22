@@ -19,7 +19,7 @@
     "package.json": ".gitignore,tsconfig.json,pnpm-workspace.yaml,.env.local,bun.lockb",
     // Python nestings
     "ansible.cfg": "inventory.yml,requirements.yml",
-    "pyproject.toml": "poetry.lock",
+    "pyproject.toml": "poetry.lock,poetry.toml",
     "main.py": "autorip.toml",
     // React / Vite nestings
     "vite.config.ts": "index.html,postcss.config.js,tailwind.config.js"

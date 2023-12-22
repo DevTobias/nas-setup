@@ -3,15 +3,13 @@ name = "autorip"
 version = "0.1.0"
 description = "Automatic Ripping Machine"
 authors = ["DevTobias <tobi.kaerst@gmx.de>"]
-
-[tool.poetry.scripts]
-ripper = "autorip:run"
+packages = [{ include = "autorip" }]
 
 [tool.isort]
 profile = "black"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 xmltodict = "^0.13.0"
 requests = "^2.31.0"
 python-dotenv = "^1.0.0"
