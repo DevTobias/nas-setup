@@ -33,7 +33,7 @@ class MakeMKVWrapper:
             with open(f"{logging_dir}/stdout.log", "r", encoding="utf-8") as f:
                 return 0, f.read(), ""
 
-        device = self._config.get["input"]["devices"][0]
+        device = self._config.get["input"]["device"]
 
         returncode, stdout, stderr = self._process_manager.call(
             ["makemkvcon64", "-r", "info", f"dev:{device}"],
