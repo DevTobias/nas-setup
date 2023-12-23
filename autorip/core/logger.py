@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 
-from autorip.config import Config
+from core.config import Config
 
 
 class Logger:

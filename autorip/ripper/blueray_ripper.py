@@ -3,17 +3,17 @@ import os
 from datetime import datetime
 
 import xmltodict
+from core.config import Config
+from core.logger import Logger
+from core.utils.string_utils import normalize_disc_title
+from core.utils.typing_utils import aware
+from process.process_manager import ProcessManager
 
-from autorip.config import Config
-from autorip.logger import Logger
-from autorip.process import ProcessManager
-from autorip.utils import aware, normalize_disc_title
-
-from .models.disc_properties import Disc, Stream, Title
-from .models.makemkv_attributes import MAKEMKV_ATTRIBUTE_ENUMS
-from .models.tmdb_responses import MovieResponse, TvResponse
-from .wrapper.makemkv import MakeMKVWrapper
-from .wrapper.tmdb import TMDBWrapper
+from ripper.models.disc_properties import Disc, Stream, Title
+from ripper.models.makemkv_attributes import MAKEMKV_ATTRIBUTE_ENUMS
+from ripper.models.tmdb_responses import MovieResponse, TvResponse
+from ripper.wrapper.makemkv import MakeMKVWrapper
+from ripper.wrapper.tmdb import TMDBWrapper
 
 
 class BlueRayRipper:
@@ -32,7 +32,7 @@ class BlueRayRipper:
         self._logger = logger
         self._process_manager = process_manager
 
-        self._device = self._config.get["input"]["devices"][0]
+        self._device = self._config.get["input"]["device"]
 
         self._makemkv_client = MakeMKVWrapper(config, logger, process_manager)
         self._tmdb_client = TMDBWrapper(config, logger)

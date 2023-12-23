@@ -3,7 +3,11 @@ name = "autorip"
 version = "0.1.0"
 description = "Automatic Ripping Machine"
 authors = ["DevTobias <tobi.kaerst@gmx.de>"]
-packages = [{ include = "autorip" }]
+packages = [
+  { include = "ripper" },
+  { include = "process" },
+  { include = "core" },
+]
 
 [tool.poetry.scripts]
 start = "autorip:main"

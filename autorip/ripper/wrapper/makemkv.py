@@ -1,6 +1,6 @@
-from autorip.config import Config
-from autorip.logger import Logger
-from autorip.process import ProcessManager
+from core.config import Config
+from core.logger import Logger
+from process.process_manager import ProcessManager
 
 
 class MakeMKVWrapper:

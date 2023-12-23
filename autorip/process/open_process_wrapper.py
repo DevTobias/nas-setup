@@ -4,7 +4,7 @@ from subprocess import Popen
 from typing import TYPE_CHECKING, Any, Type
 
 if TYPE_CHECKING:
-    from .process_manager import ProcessManager
+    from process.process_manager import ProcessManager
 
 
 class OpenProcessWrapper:

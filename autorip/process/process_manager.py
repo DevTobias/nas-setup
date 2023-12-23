@@ -4,11 +4,14 @@ from _thread import allocate_lock
 from subprocess import PIPE, Popen
 from typing import Callable, Optional
 
-from autorip.logger import Logger
-from autorip.utils import aware
+from core.logger import Logger
+from core.utils.typing_utils import aware
 
-from .exceptions.spawn_locked_exception import SpawnLockedException
-from .open_process_wrapper import OpenProcessWrapper
+from process.open_process_wrapper import OpenProcessWrapper
+
+
+class SpawnLockedException(Exception):
+    pass
 
 
 class ProcessManager:
