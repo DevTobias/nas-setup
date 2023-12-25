@@ -18,6 +18,7 @@ MAKEMKV_ATTRIBUTE_ENUMS = {
     21: "video_frame_rate",
     23: "date_time",
     24: "original_title_dd",
+    27: "output_file_name",
     28: "metadata_language_code",
     29: "metadata_language_name",
 }

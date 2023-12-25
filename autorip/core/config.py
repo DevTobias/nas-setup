@@ -26,10 +26,10 @@ config_schema = {
             "properties": {
                 "languages": {"type": "array", "items": {"type": "string"}},
                 "logging_dir": {"type": "string"},
-                "temporary_rip_dir": {"type": "string"},
-                "output_dir": {"type": "string"},
+                "working_dir": {"type": "string"},
+                "eject_disc": {"type": "boolean"},
             },
-            "required": ["languages", "logging_dir", "temporary_rip_dir", "output_dir"],
+            "required": ["languages", "logging_dir", "eject_disc", "working_dir"],
             "additionalProperties": False,
         },
         "metadata": {
@@ -57,8 +57,8 @@ class InputConfig(TypedDict):
 class OutputConfig(TypedDict):
     languages: list[str]
     logging_dir: str
-    temporary_rip_dir: str
-    output_dir: str
+    working_dir: str
+    eject_disc: bool
 
 
 class MetadataConfig(TypedDict):

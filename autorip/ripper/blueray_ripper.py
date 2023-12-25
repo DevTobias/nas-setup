@@ -1,30 +1,21 @@
-import csv
 import os
-from datetime import datetime
+import subprocess as subp
+from typing import Literal
 
-import xmltodict
 from core.config import Config
 from core.logger import Logger
-from core.utils.string_utils import normalize_disc_title
 from core.utils.typing_utils import aware
+from makemkv.make_mkv_wrapper import MakeMKVWrapper
+from makemkv.models.disc_properties import Disc, Stream, Title
+from metadata.metadata_wrapper import MetadataWrapper
+from metadata.models.metadata import MovieMetadata, TvMetadata
 from process.process_manager import ProcessManager
-
-from ripper.models.disc_properties import Disc, Stream, Title
-from ripper.models.makemkv_attributes import MAKEMKV_ATTRIBUTE_ENUMS
-from ripper.models.tmdb_responses import MovieResponse, TvResponse
-from ripper.wrapper.makemkv import MakeMKVWrapper
-from ripper.wrapper.tmdb import TMDBWrapper
 
 
 class BlueRayRipper:
     """
     A class representing a BlueRayRipper object that can read disc properties, fetch metadata from
     TMDB, and detect the main feature of the disc to finally rip it.
-
-    Args:
-        - device (str): The device path of the Blue-ray disc.
-        - langs (list[str]): A list of language codes to filter the streams by.
-        - imdb_token (str): The TMDB API token.
     """
 
     def __init__(self, config: Config, logger: Logger, process_manager: ProcessManager):
@@ -35,151 +26,91 @@ class BlueRayRipper:
         self._device = self._config.get["input"]["device"]
 
         self._makemkv_client = MakeMKVWrapper(config, logger, process_manager)
-        self._tmdb_client = TMDBWrapper(config, logger)
+        self._metadata_client = MetadataWrapper(config, logger)
 
         self._disc: Disc = {}
         self._titles: dict[int, Title] = {}
 
-        self._local_title: str | None = None
-        self._local_year: str | None = None
-        self._movie_metadata: MovieResponse | None = None
-        self._tv_metadata: TvResponse | None = None
+        self._movie_metadata: MovieMetadata | None = None
+        self._tv_metadata: TvMetadata | None = None
 
         self._main_feature: int | None = None
+        self._content_type: Literal["movie", "tv"] | None = None
 
-    @property
-    def main_feature(self):
-        """
-        Returns the main feature of the Blu-ray disc.
+    ################################################################################################
+    # Actual ripping process                                                                       #
+    ################################################################################################
 
-        Raises:
-            ValueError: If no main feature was detected.
-
-        Returns:
-            Tuple[int, str]: A tuple containing the main feature index and title.
-        """
-
+    def rip_main_feature(self, output_dir: str):
         if self._main_feature is None:
             raise ValueError("No main feature was detected.")
 
-        return (self._main_feature, self._titles[self._main_feature])
+        if self._movie_metadata is None and self._tv_metadata is None:
+            raise ValueError("No metadata was fetched.")
+
+        metadata = aware(self._movie_metadata or self._tv_metadata)
+
+        self._makemkv_client.rip_blue_ray(self._main_feature)
+
+        temp_path = os.path.join(
+            self._config.get["output"]["working_dir"],
+            aware(self._titles[self._main_feature].get("output_file_name")),
+        )
+
+        final_name = f"{metadata.get("title")} ({metadata.get("year")}).mkv"
+        final_path = os.path.join(output_dir, final_name)
+
+        os.renames(temp_path, final_path)
+
+        if self._config.get["output"]["eject_disc"]:
+            subp.call(["eject", self._device])
+
+        return os.path.abspath(final_path)
 
     ################################################################################################
     # Metadata-Gathering (MakeMKV, Disc, TMDB)                                                     #
     ################################################################################################
 
-    def read_disc_properties(self):
+    def read_disc_properties(self, tmdb_id: int, content_type: Literal["movie", "tv"]):
         """
         Reads the properties of the disc and returns a tuple containing the disc and
         title information.
 
+        Args:
+            tmdb_id: The TMDB ID of the movie or tv show associated with the disc.
+            content_type: The type of content (movie or tv) associated with the disc.
+
         Returns:
-            The current instance of the BluRayRipper object.
+            BluRayRipper: The current instance of the BluRayRipper object.
         """
 
-        self._logger.info(f"Reading disc properties from {self._device}...")
+        (disc, titles) = self._makemkv_client.read_disc_properties()
 
-        properties = self._makemkv_client.read_disc_properties()
+        self._disc = disc
+        self._titles = titles
 
-        _, stdout, _ = properties
-        parsed = list(csv.reader(stdout.split("\n")))
+        self._main_feature = None
+        self._content_type = content_type
 
-        def save_value(obj: Disc | Title | Stream, prop: int | str, value: int | str):
-            if prop in MAKEMKV_ATTRIBUTE_ENUMS:
-                obj[MAKEMKV_ATTRIBUTE_ENUMS[prop]] = value
-
-        for line in parsed:
-            if len(line) == 0:
-                continue
-
-            # First column contains data after the first colon, make it a proper column
-            data = line[0].split(":", 1) + line[1:]
-
-            # Convert every possible column to int values
-            data = [int(x) if x.isdigit() else x for x in data]
-            key = data[0]
-
-            # Parse general disc info
-            if key == "CINFO":
-                save_value(self._disc, data[1], data[3])
-
-            # Parse title info
-            elif key == "TINFO":
-                title = int(data[1])
-                self._titles.setdefault(title, {})
-                save_value(self._titles[title], data[2], data[4])
-
-            # Parse stream info
-            elif key == "SINFO":
-                title, stream = int(data[1]), int(data[2])
-                self._titles[title].setdefault("streams", {}).setdefault(stream, {})
-                save_value(
-                    aware(self._titles[title].get("streams"))[stream], data[3], data[5]
-                )
-
-        self._logger.info(f"Successfully read disc properties: {self._disc}")
-        self._logger.info(f"Successfully read title properties: {self._titles}")
-
-        # Read the title from the device and fetch metadata from TMDB
         self._filter_streams()
-        self._read_title_from_device()
-        self._fetch_tmdb_info()
+        self._fetch_metadata(tmdb_id)
 
         return self
 
-    def _read_title_from_device(self):
-        """
-        Reads the title of the disc from the device and returns it. If the title cannot be read from
-        the device, the method falls back to the default disc name.
-        """
-
-        self._logger.info("Reading title from device...")
-
-        title = self._disc.get("name", "unknown").replace("_", " ").title()
-        meta_path = self._device + "/BDMV/META/DL/bdmt_eng.xml"
-
-        try:
-            with open(meta_path, "r", encoding="utf-8") as file:
-                modified_timestamp = os.path.getmtime(meta_path)
-                self._local_year = datetime.fromtimestamp(modified_timestamp).strftime(
-                    "%Y"
-                )
-
-                doc = xmltodict.parse(file.read())
-                read_title: str = doc["disclib"]["di:discinfo"]["di:title"]["di:name"]
-                title = read_title if read_title else self._disc["name"]
-
-        except OSError:
-            self._logger.error(
-                "Disc is a Blue Ray, but bdmt_eng.xml could not be found."
-            )
-
-        except KeyError:
-            self._logger.error("Could not parse title from bdmt_eng.xml file.")
-
-        self._local_title = normalize_disc_title(title)
-
-    def _fetch_tmdb_info(self):
+    def _fetch_metadata(self, tmdb_id: int):
         """
         Fetches movie or TV show metadata from TMDB using the local title and year.
+
+        Args:
+            tmdb_id: The TMDB ID of the movie or tv show associated with the disc.
         """
 
-        self._logger.info(f"Fetching metadata from TMDB for {self._local_title}...")
+        self._logger.info(f"Fetching metadata from TMDB for id {tmdb_id}...")
 
-        search_response = self._tmdb_client.search(
-            aware(self._local_title), self._local_year
-        )
-
-        if not search_response:
-            self._logger.error("Could not find movie or show in TMDB.")
-            return
-
-        (media_id, media_type) = search_response
-
-        if media_type == "movie":
-            self._movie_metadata = self._tmdb_client.get_movie_details(media_id)
-        elif media_type == "tv":
-            self._tv_metadata = self._tmdb_client.get_tv_details(media_id)
+        if self._content_type == "movie":
+            self._movie_metadata = self._metadata_client.get_movie_details(tmdb_id)
+        elif self._content_type == "tv":
+            self._tv_metadata = self._metadata_client.get_tv_details(tmdb_id)
 
     def _filter_streams(self):
         """
@@ -215,6 +146,23 @@ class BlueRayRipper:
     # Main Feature Detection                                                                       #
     ################################################################################################
 
+    @property
+    def main_feature(self):
+        """
+        Returns the main feature of the Blu-ray disc.
+
+        Raises:
+            ValueError: If no main feature was detected.
+
+        Returns:
+            Tuple[int, str]: A tuple containing the main feature index and title.
+        """
+
+        if self._main_feature is None:
+            raise ValueError("No main feature was detected.")
+
+        return (self._main_feature, self._titles[self._main_feature])
+
     def detect_main_feature(self):
         """
         Detects the main feature of the Blu-ray disc by analyzing various metrics such as
@@ -229,7 +177,7 @@ class BlueRayRipper:
         metrics = self._create_title_metrics()
 
         # Metrics weights: duration, chapters, subtitle_streams, audio_streams
-        weights = [0.81, 0.089, 0.071, 0.030]
+        weights = [0.81, 0.52, 0.089, 0.071, 0.030]
 
         # Largest of each metric, so we can normalize
         max_of_field = list(
@@ -270,15 +218,22 @@ class BlueRayRipper:
         if len(self._titles) == 0:
             raise ValueError("No titles were found on the disc.")
 
-        metrics: list[tuple[int, int, int, int, int]] = []
+        metrics: list[tuple[int, int, int, int, int, int]] = []
+
+        actual_runtime = 0
+        if self._movie_metadata is not None:
+            actual_runtime = self._movie_metadata.get("runtime") * 60
 
         for title, title_info in self._titles.items():
             stream = aware(title_info.get("streams")).values()
             duration = self._duration_to_seconds(title_info.get("duration", "0:00:00"))
+            duration_diff = -abs(actual_runtime - duration)
             chapters = int(title_info.get("chapter_count", 0))
             n_subtitle = len([s for s in stream if self._is_type(s, "subtitle")])
             s_audio = len([s for s in stream if self._is_type(s, "audio")])
-            metrics.append((duration, n_subtitle, s_audio, chapters, title))
+            metrics.append(
+                (duration, duration_diff, n_subtitle, s_audio, chapters, title)
+            )
 
         self._logger.debug(f"Successfully created title metrics: {metrics}")
 

@@ -1,5 +1,4 @@
 import re
-import unicodedata
 
 
 def clean_for_filename(string: str):
@@ -27,27 +26,3 @@ def clean_for_filename(string: str):
         .strip()
     )
     return re.sub("[^\\w.() -]", "", string)
-
-
-def normalize_disc_title(title: str):
-    """
-    Normalizes a disc title by removing non-ASCII characters and certain
-    strings that are commonly found in Blu-ray titles.
-
-    Args:
-       -  title (str): The title to normalize.
-
-    Returns:
-        str: The normalized title.
-    """
-
-    return (
-        unicodedata.normalize("NFKD", title)
-        .encode("ascii", "ignore")
-        .decode()
-        .replace(" - Blu-rayTM", "")
-        .replace(" Blu-rayTM", "")
-        .replace(" - BLU-RAYTM", "")
-        .replace(" - BLU-RAY", "")
-        .replace(" - Blu-ray", "")
-    )

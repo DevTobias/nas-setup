@@ -20,6 +20,7 @@ class Title(TypedDict, total=False):
     duration: str
     disk_size: str
     disk_size_bytes: str
+    output_file_name: str
     segments_count: int
     segments_map: int
     streams: dict[int, Stream]

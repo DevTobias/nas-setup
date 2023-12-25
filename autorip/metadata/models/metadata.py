@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 
-class MovieResponse(TypedDict):
+class MovieMetadata(TypedDict):
     id: str
     imdb_id: str
     title: str
@@ -9,7 +9,7 @@ class MovieResponse(TypedDict):
     year: str
 
 
-class TvResponse(TypedDict):
+class TvMetadata(TypedDict):
     id: str
     name: str
     episode_run_time: int
