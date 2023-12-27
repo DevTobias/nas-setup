@@ -43,7 +43,7 @@ class ProcessManager:
         """
         try:
             with self._open_process(args, stdout=PIPE, stderr=PIPE) as pipe:
-                self._logger.info(f"Executing {" ".join(args)}")
+                self._logger.info(f"Executing {' '.join(args)}")
                 sout = ""
 
                 for line in iter(aware(pipe.raw.stdout).readline, b""):
@@ -55,7 +55,7 @@ class ProcessManager:
 
                 remain_sout, serr = pipe.communicate()
                 sout, serr = (
-                    f"{sout}\n{remain_sout.decode("utf-8").strip()}",
+                    f"{sout}\n{remain_sout.decode('utf-8').strip()}",
                     serr.decode("utf-8").strip(),
                 )
 

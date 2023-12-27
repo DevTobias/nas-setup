@@ -1,5 +1,6 @@
 import csv
 import os
+from typing import Callable, Optional
 
 from core.config import Config
 from core.logger import Logger
@@ -126,7 +127,9 @@ class MakeMKVWrapper:
     # Actual ripping process                                                                       #
     ################################################################################################
 
-    def rip_blue_ray(self, title: int) -> tuple[int, str, str]:
+    def rip_blue_ray(
+        self, title: int, cb: Optional[Callable[[float], None]] = None
+    ) -> tuple[int, str, str]:
         """
         Rips the main feature of a blue-ray disc using the makemkvcon command line tool.
 
@@ -146,6 +149,15 @@ class MakeMKVWrapper:
         )
 
         os.makedirs(output_dir, exist_ok=True)
+
+        def rip_callback(line: str):
+            self._logger.debug(line)
+
+            if cb and line.startswith("PRGV"):
+                parsed = line.split(":", 1)[1].strip().split(",")
+                [_, curr, total] = [float(x) for x in parsed]
+                cb((curr / total) * 100)
+
         returncode, stdout, stderr = self._process_manager.call(
             [
                 "makemkvcon",
@@ -157,7 +169,7 @@ class MakeMKVWrapper:
                 f"{title}",
                 f"{output_dir}",
             ],
-            cb=self._logger.debug,
+            cb=rip_callback,
         )
 
         if returncode != 0:

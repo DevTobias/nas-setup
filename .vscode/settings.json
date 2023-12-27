@@ -37,10 +37,10 @@
     "**/node_modules": true,
     "**/pnpm-lock.yaml": true,
     "**/.venv": true,
-    "stream_bot": true,
-    "media_bot": true,
+    "ansible": true,
     "autorip-web": true,
-    "ansible": true
+    "media_bot": true,
+    "stream_bot": true
   },
 
   //! Python
@@ -66,7 +66,9 @@
     "autorip/autorip/logger",
     "autorip/autorip/utils"
   ],
-  "python.analysis.diagnosticSeverityOverrides": {},
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportUnusedFunction": "none"
+  },
 
   // Typescript
   "typescript.enablePromptUseWorkspaceTsdk": true,
@@ -109,5 +111,5 @@
   "[typescript][javascript]": {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
   },
-  "hide-files.files": ["stream_bot", "media_bot", "autorip-web", "ansible"]
+  "hide-files.files": ["autorip-web", "media_bot", "stream_bot"]
 }

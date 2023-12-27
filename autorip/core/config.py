@@ -39,7 +39,7 @@ config_schema = {
             "additionalProperties": False,
         },
     },
-    "required": ["input", "output", "metadata"],
+    "required": ["input", "output", "metadata", "logger"],
     "additionalProperties": False,
 }
 

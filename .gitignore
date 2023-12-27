@@ -4,3 +4,4 @@
 **/autorip.toml
 **/_out
 **/.env*
+**/.venv

@@ -16,7 +16,7 @@ start = "autorip:main"
 profile = "black"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 xmltodict = "^0.13.0"
 requests = "^2.31.0"
 python-dotenv = "^1.0.0"

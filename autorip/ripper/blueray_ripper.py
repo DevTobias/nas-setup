@@ -1,6 +1,6 @@
 import os
 import subprocess as subp
-from typing import Literal
+from typing import Callable, Literal, Optional
 
 from core.config import Config
 from core.logger import Logger
@@ -41,7 +41,9 @@ class BlueRayRipper:
     # Actual ripping process                                                                       #
     ################################################################################################
 
-    def rip_main_feature(self, output_dir: str):
+    def rip_main_feature(
+        self, output_dir: str, cb: Optional[Callable[[float], None]] = None
+    ):
         if self._main_feature is None:
             raise ValueError("No main feature was detected.")
 
@@ -50,14 +52,14 @@ class BlueRayRipper:
 
         metadata = aware(self._movie_metadata or self._tv_metadata)
 
-        self._makemkv_client.rip_blue_ray(self._main_feature)
+        self._makemkv_client.rip_blue_ray(self._main_feature, cb)
 
         temp_path = os.path.join(
             self._config.get["output"]["working_dir"],
             aware(self._titles[self._main_feature].get("output_file_name")),
         )
 
-        final_name = f"{metadata.get("title")} ({metadata.get("year")}).mkv"
+        final_name = f"{metadata.get('title')} ({metadata.get('year')}).mkv"
         final_path = os.path.join(output_dir, final_name)
 
         os.renames(temp_path, final_path)
@@ -71,7 +73,7 @@ class BlueRayRipper:
     # Metadata-Gathering (MakeMKV, Disc, TMDB)                                                     #
     ################################################################################################
 
-    def read_disc_properties(self, tmdb_id: int, content_type: Literal["movie", "tv"]):
+    def read_disc_properties(self):
         """
         Reads the properties of the disc and returns a tuple containing the disc and
         title information.
@@ -90,20 +92,20 @@ class BlueRayRipper:
         self._titles = titles
 
         self._main_feature = None
-        self._content_type = content_type
 
         self._filter_streams()
-        self._fetch_metadata(tmdb_id)
 
         return self
 
-    def _fetch_metadata(self, tmdb_id: int):
+    def fetch_metadata(self, tmdb_id: int, content_type: Literal["movie", "tv"]):
         """
         Fetches movie or TV show metadata from TMDB using the local title and year.
 
         Args:
             tmdb_id: The TMDB ID of the movie or tv show associated with the disc.
         """
+
+        self._content_type = content_type
 
         self._logger.info(f"Fetching metadata from TMDB for id {tmdb_id}...")
 
