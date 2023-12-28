@@ -21,6 +21,8 @@ xmltodict = "^0.13.0"
 requests = "^2.31.0"
 python-dotenv = "^1.0.0"
 jsonschema = "^4.19.2"
+fastapi = "^0.108.0"
+uvicorn = {extras = ["standard"], version = "^0.25.0"}
 
 [build-system]
 requires = ["poetry-core"]

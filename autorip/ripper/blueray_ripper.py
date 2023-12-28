@@ -73,6 +73,23 @@ class BlueRayRipper:
     # Metadata-Gathering (MakeMKV, Disc, TMDB)                                                     #
     ################################################################################################
 
+    @property
+    def metadata(self):
+        """
+        Returns the metadata of the movie or tv show associated with the disc.
+
+        Raises:
+            ValueError: If no metadata was fetched.
+
+        Returns:
+            MovieMetadata | TvMetadata: The metadata of the movie or tv show.
+        """
+
+        if self._movie_metadata is None and self._tv_metadata is None:
+            raise ValueError("No metadata was fetched.")
+
+        return aware(self._movie_metadata or self._tv_metadata)
+
     def read_disc_properties(self):
         """
         Reads the properties of the disc and returns a tuple containing the disc and
@@ -106,11 +123,11 @@ class BlueRayRipper:
         """
 
         self._content_type = content_type
-
         self._logger.info(f"Fetching metadata from TMDB for id {tmdb_id}...")
 
         if self._content_type == "movie":
             self._movie_metadata = self._metadata_client.get_movie_details(tmdb_id)
+
         elif self._content_type == "tv":
             self._tv_metadata = self._metadata_client.get_tv_details(tmdb_id)
 
