@@ -54,7 +54,8 @@
     "--disable=missing-function-docstring",
     "--disable=wrong-import-order",
     "--disable=useless-import-alias",
-    "--disable=too-many-instance-attributes"
+    "--disable=too-many-instance-attributes",
+    "--disable=broad-exception-caught"
   ],
   "python.defaultInterpreterPath": "~/AppData/Local/pypoetry/Cache/virtualenvs/autorip-GWbqsLle-py3.12/Scripts/python.exe",
   "python.analysis.extraPaths": [

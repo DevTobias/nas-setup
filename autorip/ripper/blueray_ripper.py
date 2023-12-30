@@ -52,14 +52,19 @@ class BlueRayRipper:
 
         metadata = aware(self._movie_metadata or self._tv_metadata)
 
-        self._makemkv_client.rip_blue_ray(self._main_feature, cb)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        self._makemkv_client.rip_blue_ray(self._main_feature, output_dir, cb)
 
         temp_path = os.path.join(
-            self._config.get["output"]["working_dir"],
+            output_dir,
             aware(self._titles[self._main_feature].get("output_file_name")),
         )
 
-        final_name = f"{metadata.get('title')} ({metadata.get('year')}).mkv"
+        final_name = (
+            f"{metadata.get('title')} ({metadata.get('year')}) - [Bluray-1080p].mkv"
+        )
         final_path = os.path.join(output_dir, final_name)
 
         os.renames(temp_path, final_path)
@@ -67,7 +72,7 @@ class BlueRayRipper:
         if self._config.get["output"]["eject_disc"]:
             subp.call(["eject", self._device])
 
-        return os.path.abspath(final_path)
+        return (final_name, os.path.abspath(final_path))
 
     ################################################################################################
     # Metadata-Gathering (MakeMKV, Disc, TMDB)                                                     #

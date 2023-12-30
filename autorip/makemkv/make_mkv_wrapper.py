@@ -128,7 +128,7 @@ class MakeMKVWrapper:
     ################################################################################################
 
     def rip_blue_ray(
-        self, title: int, cb: Optional[Callable[[float], None]] = None
+        self, title: int, output_dir: str, cb: Optional[Callable[[float], None]] = None
     ) -> tuple[int, str, str]:
         """
         Rips the main feature of a blue-ray disc using the makemkvcon command line tool.
@@ -142,7 +142,6 @@ class MakeMKVWrapper:
         """
 
         device = self._config.get["input"]["device"]
-        output_dir = self._config.get["output"]["working_dir"]
 
         self._logger.info(
             f"Ripping title with id {title} from {device} into {output_dir}"
@@ -156,7 +155,7 @@ class MakeMKVWrapper:
             if cb and line.startswith("PRGV"):
                 parsed = line.split(":", 1)[1].strip().split(",")
                 [_, curr, total] = [float(x) for x in parsed]
-                cb((curr / total) * 100)
+                cb(curr / total)
 
         returncode, stdout, stderr = self._process_manager.call(
             [

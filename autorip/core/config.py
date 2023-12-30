@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import List, TypedDict
 
 import tomllib
 from jsonschema import validate
@@ -28,14 +28,49 @@ config_schema = {
                 "logging_dir": {"type": "string"},
                 "working_dir": {"type": "string"},
                 "eject_disc": {"type": "boolean"},
+                "presets": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {"type": "string"},
+                            "name": {"type": "string"},
+                            "path": {"type": "string"},
+                        },
+                        "required": ["type", "name", "path"],
+                        "additionalProperties": False,
+                    },
+                },
             },
-            "required": ["languages", "logging_dir", "eject_disc", "working_dir"],
+            "required": [
+                "languages",
+                "logging_dir",
+                "eject_disc",
+                "working_dir",
+                "presets",
+            ],
             "additionalProperties": False,
         },
         "metadata": {
             "type": "object",
             "properties": {"imdb_token": {"type": "string"}},
             "required": ["imdb_token"],
+            "additionalProperties": False,
+        },
+        "media": {
+            "type": "object",
+            "properties": {
+                "media_dir": {"type": "string"},
+                "radarr_token": {"type": "string"},
+                "radarr_quality_profile": {"type": "string"},
+                "radarr_url": {"type": "string"},
+            },
+            "required": [
+                "media_dir",
+                "radarr_token",
+                "radarr_quality_profile",
+                "radarr_url",
+            ],
             "additionalProperties": False,
         },
     },
@@ -54,11 +89,25 @@ class InputConfig(TypedDict):
     read_from_log: bool
 
 
+class PresetConfig(TypedDict):
+    type: str
+    name: str
+    path: str
+
+
+class MediaConfig(TypedDict):
+    radarr_url: str
+    radarr_token: str
+    radarr_quality_profile: str
+    media_dir: str
+
+
 class OutputConfig(TypedDict):
     languages: list[str]
     logging_dir: str
     working_dir: str
     eject_disc: bool
+    presets: List[PresetConfig]
 
 
 class MetadataConfig(TypedDict):
@@ -70,6 +119,7 @@ class AppConfig(TypedDict):
     input: InputConfig
     output: OutputConfig
     metadata: MetadataConfig
+    media: MediaConfig
 
 
 class Config:
