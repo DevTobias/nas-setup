@@ -36,11 +36,7 @@
     "**/__pycache__": true,
     "**/node_modules": true,
     "**/pnpm-lock.yaml": true,
-    "**/.venv": true,
-    "ansible": true,
-    "autorip-web": true,
-    "media_bot": true,
-    "stream_bot": true
+    "**/.venv": true
   },
 
   //! Python
@@ -112,5 +108,5 @@
   "[typescript][javascript]": {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
   },
-  "hide-files.files": ["autorip-web", "media_bot", "stream_bot"]
+  "hide-files.files": []
 }
