@@ -25,6 +25,7 @@ class Uploader:
     ):
         output_dir = self.create_media(tmdb_id, media_type)
         output_file = os.path.join(output_dir, os.path.basename(input_file))
+        time.sleep(5)
 
         self.logger.info(f"Moving file {input_file} to {output_file}")
         start_time = time.time()
