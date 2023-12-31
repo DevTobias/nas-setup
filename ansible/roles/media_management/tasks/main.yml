@@ -33,7 +33,7 @@
             traefik.http.routers.jellyseerr.tls: true
 
         sonarr:
-          image: ghcr.io/hotio/sonarr:latest
+          image: lscr.io/linuxserver/sonarr:latest
           container_name: media_management_sonarr
           restart: unless-stopped
           healthcheck:
@@ -63,7 +63,7 @@
             traefik.http.routers.sonarr.tls: true
 
         radarr:
-          image: ghcr.io/hotio/radarr:latest
+          image: lscr.io/linuxserver/radarr:latest
           container_name: media_management_radarr
           restart: unless-stopped
           healthcheck:

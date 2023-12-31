@@ -104,44 +104,6 @@
             traefik.http.routers.kavita.rule: Host(`{{ kavita_host }}`)
             traefik.http.routers.kavita.tls: true
 
-        # bitwarden:
-        #   image: bitwarden/self-host:beta
-        #   container_name: service_bitwarden
-        #   restart: unless-stopped
-        #   healthcheck:
-        #     disable: true
-        #   logging:
-        #     driver: none
-        #   networks:
-        #     - infrastructure_default
-        #   environment:
-        #     BW_INSTALLATION_ID: '{{ bitwarden_installation_id }}'
-        #     BW_INSTALLATION_KEY: '{{ bitwarden_installation_key }}'
-        #     BW_DOMAIN: '{{ bitwarden_host }}'
-        #     BW_DB_PROVIDER: 'sqlite'
-        #     globalSettings__mail__replyToEmail: '{{ bitwarden_email }}'
-        #     globalSettings__mail__smtp__host: 'smtp.gmail.com'
-        #     globalSettings__mail__smtp__port: '587'
-        #     globalSettings__mail__smtp__ssl: 'true'
-        #     globalSettings__mail__smtp__username: '{{ bitwarden_email }}'
-        #     globalSettings__mail__smtp__password: '{{ bitwarden_email_password }}'
-        #   volumes:
-        #     - '{{ docker_path }}/bitwarden:/etc/bitwarden'
-        #   labels:
-        #     # General configuration
-        #     traefik.enable: true
-        #     # Http configuration
-        #     traefik.http.routers.bitwarden-http.entrypoints: web
-        #     traefik.http.routers.bitwarden-http.rule: Host(`{{ bitwarden_host }}`)
-        #     traefik.http.routers.bitwarden-http.middlewares: bitwarden-https
-        #     traefik.http.middlewares.bitwarden-https.redirectscheme.scheme: https
-        #     # Https configuration
-        #     traefik.http.routers.bitwarden.entrypoints: websecure
-        #     traefik.http.routers.bitwarden.rule: Host(`{{ bitwarden_host }}`)
-        #     traefik.http.routers.bitwarden.service: bitwarden-https-service
-        #     traefik.http.services.bitwarden-https-service.loadbalancer.server.port: 8080
-        #     traefik.http.routers.bitwarden.tls: true
-
         audiobookshelf:
           image: ghcr.io/advplyr/audiobookshelf:latest
           container_name: service_audiobookshelf
@@ -195,41 +157,6 @@
             traefik.http.routers.dash.entrypoints: websecure
             traefik.http.routers.dash.rule: Host(`{{ dash_host }}`)
             traefik.http.routers.dash.tls: true
-
-        media_discord_bot:
-          image: devtobias/media_bot:latest
-          container_name: service_media_discord_bot
-          restart: unless-stopped
-          healthcheck:
-            disable: true
-          logging:
-            driver: none
-          networks:
-            - infrastructure_default
-          volumes:
-            - '{{ media_path }}/series:/media/series'
-            - '{{ media_path }}/movies:/media/movies'
-          environment:
-            BOT_TOKEN: '{{ media_bot_token }}'
-            BOT_CLIENT_ID: '{{ media_bot_client_id }}'
-            TMDB_TOKEN: '{{ tmdb_token }}'
-            STREAMER_ENDPOINT: '{{ stream_bot_endpoint }}'
-
-        stream_discord_bot:
-          image: devtobias/stream_bot:latest
-          container_name: service_stream_discord_bot
-          restart: unless-stopped
-          healthcheck:
-            disable: true
-          logging:
-            driver: none
-          networks:
-            - infrastructure_default
-          volumes:
-            - '{{ media_path }}/series:/media/series'
-            - '{{ media_path }}/movies:/media/movies'
-          environment:
-            CLIENT_TOKEN: '{{ stream_bot_token }}'
 
       networks:
         infrastructure_default:
