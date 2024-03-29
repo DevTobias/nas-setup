@@ -1,0 +1,35 @@
+title: Neas
+base: "https://{{ homepage_host }}"
+language: "{{ language }}"
+
+providers:
+  openweathermap: "{{ openweather_api_key }}"
+
+favicon: /images/favicon.ico
+background:
+  image: /images/background.webp
+  saturate: 50
+  brightness: 75
+  opacity: 50
+
+iconStyle: theme
+theme: dark
+color: gray
+
+hideVersion: true
+headerStyle: clean
+
+cardBlur: sm
+
+layout:
+  Management:
+    icon: si-authelia
+    style: row
+    columns: 3
+  Media:
+    style: row
+    columns: 2
+  MediaManagement:
+    style: row
+    columns: 2
+

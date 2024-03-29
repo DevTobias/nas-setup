@@ -4,13 +4,13 @@
   become: true
 
   roles:
-    - role: _directories
-      tags:
-        - _directories
-
     - role: infrastructure
       tags:
         - infrastructure
+
+    - role: monitoring
+      tags:
+        - monitoring
 
     - role: services
       tags:

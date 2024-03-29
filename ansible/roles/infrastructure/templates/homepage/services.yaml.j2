@@ -1,0 +1,67 @@
+- Media:
+    - Jellyfin:
+        icon: si-jellyfin
+        href: "https://{{ jellyfin_host }}"
+        description: Watch movies and TV shows.
+        siteMonitor: "https://{{ jellyfin_host }}"
+        container: service_jellyfin
+        widget:
+          type: jellyfin
+          url: "https://{{ jellyfin_host }}"
+          key: "{{ jellyfin_key }}"
+          enableNowPlaying: true
+    - 'Audio Bookshelf':
+        icon: si-audible
+        href: "https://{{ audiobookshelf_host }}"
+        description: Listen to Podcasts or Audiobooks.
+        siteMonitor: "https://{{ audiobookshelf_host }}"
+        container: service_audiobookshelf
+        widget:
+          type: audiobookshelf
+          url: "https://{{ audiobookshelf_host }}"
+          key: "{{ audiobookshelf_key }}"
+
+- MediaManagement:
+    - Sonarr:
+        icon: si-sonarr
+        href: "https://{{ sonarr_host }}"
+        description: Request and manage TV shows.
+        siteMonitor: "https://{{ sonarr_host }}"
+        container: media_management_sonarr
+        widget:
+          type: sonarr
+          url: "https://{{ sonarr_host }}"
+          key: "{{ sonarr_key }}"
+
+- Management:
+    - Synology:
+        icon: si-truenas
+        href: "https://{{ nas_domain }}"
+        description: Manage your NAS.
+        siteMonitor: "https://{{ nas_domain }}"
+        widget:
+          type: diskstation
+          url: "https://{{ nas_domain }}"
+          username: "{{ nas_username }}"
+          password: "{{ nas_password }}"
+          volume: volume_1
+    - Adguard:
+        icon: si-adguard
+        href: "https://{{ adguard_host }}"
+        description: Network-wide ad blocking.
+        siteMonitor: "https://{{ adguard_host }}"
+        container: infrastructure_adguardhome
+        widget:
+          type: adguard
+          url: "https://{{ adguard_host }}"
+          username: "{{ adguard.username }}"
+          password: "{{ adguard.password }}"
+    - Traefik:
+        icon: si-traefikproxy
+        href: "https://{{ traefik_host }}/dashboard/"
+        description: Reverse proxy and load balancer.
+        siteMonitor: "https://{{ traefik_host }}/dashboard/"
+        container: infrastructure_traefik
+        widget:
+          type: traefik
+          url: "https://{{ traefik_host }}"

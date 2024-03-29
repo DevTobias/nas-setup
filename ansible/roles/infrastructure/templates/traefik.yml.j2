@@ -16,8 +16,31 @@ global:
 entryPoints:
   web:
     address: :80
+    http:
+      redirections:
+        entrypoint:
+          to: websecure
+          scheme: https
+          permanent: true
   websecure:
     address: :443
+    http:
+      tls: {}
+  dns_tls:
+    address: :853
+
+http:
+  routers:
+    nas-redirect:
+      entryPoints:
+        - websecure
+      rule: Host(`{{ nas_domain }}`)
+      service: service_nas
+  services:
+    service_nas:
+      loadBalancer:
+        servers:
+          - url: "{{ nas_endpoint }}"
 
 ################################################################
 # TLS / API configuration
@@ -25,8 +48,8 @@ entryPoints:
 
 tls:
   certificates:
-    - certFile: /certs/{{ ssl_certfile }}
-      keyFile: /certs/{{ ssl_keyfile }}
+    - certFile: "/certs/{{ ssl_certfile }}"
+      keyFile: "/certs/{{ ssl_keyfile }}"
 
 api:
   dashboard: true
@@ -36,10 +59,7 @@ api:
 ################################################################
 
 providers:
-  # Don't expose services by default, we want manually control over it
-  docker:
-    exposedByDefault: false
-  # Defines the location of the traefik configuration inside the docker container
+  docker: {}
   file:
     directory: /etc/traefik
     watch: true

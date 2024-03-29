@@ -108,5 +108,5 @@
   "[typescript][javascript]": {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
   },
-  "hide-files.files": []
+  "ansible.python.interpreterPath": "/bin/python3"
 }

@@ -1,3 +1,46 @@
+- name: Ensure infrastructure directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+  loop:
+    - '{{ docker_path }}/traefik/certificates'
+    - '{{ docker_path }}/homepage/config/images'
+    - '{{ docker_path }}/adguard/conf'
+    - '{{ docker_path }}/adguard/work'
+    - '{{ docker_path }}/adguard/certificates'
+
+- name: Copy infrastructure files
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  loop:
+    - src: '{{ ssl_certfile_source }}'
+      dest: '{{ docker_path }}/traefik/certificates/'
+    - src: '{{ ssl_certfile_source }}'
+      dest: '{{ docker_path }}/adguard/certificates/'
+    - src: 'templates/homepage/static/custom.css'
+      dest: '{{ docker_path }}/homepage/config/custom.css'
+    - src: 'templates/homepage/images/'
+      dest: '{{ docker_path }}/homepage/config/images/'
+
+- name: Copy infrastructure template files
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  loop:
+    - src: traefik.yml.j2
+      dest: '{{ docker_path }}/traefik/traefik.yml'
+    - src: AdGuardHome.yaml.j2
+      dest: '{{ docker_path }}/adguard/conf/AdGuardHome.yaml'
+    - src: homepage/widgets.yaml.j2
+      dest: '{{ docker_path }}/homepage/config/widgets.yaml'
+    - src: homepage/settings.yaml.j2
+      dest: '{{ docker_path }}/homepage/config/settings.yaml'
+    - src: homepage/services.yaml.j2
+      dest: '{{ docker_path }}/homepage/config/services.yaml'
+    - src: homepage/bookmarks.yaml.j2
+      dest: '{{ docker_path }}/homepage/config/bookmarks.yaml'
+
 - name: Deploy docker infrastructure
   docker_compose:
     project_name: infrastructure
@@ -5,53 +48,99 @@
     definition:
       version: '3'
       services:
+        # Watchtower automatically updates all running containers.
         watchtower:
           image: containrrr/watchtower:latest
           container_name: infrastructure_watchtower
           restart: unless-stopped
           healthcheck:
-            disable: true
+            disable: '{{ disable_healthcheck }}'
           logging:
             driver: none
           environment:
-            WATCHTOWER_SCHEDULE: '0 0 * * * *'
-            WATCHTOWER_CLEANUP: 'true'
             TZ: '{{ timezone }}'
+            WATCHTOWER_SCHEDULE: '{{ watchtower_schedule }}'
+            WATCHTOWER_CLEANUP: 'true'
+            WATCHTOWER_REMOVE_VOLUMES: 'true'
           volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
+            - '{{ docker_socket }}:/var/run/docker.sock'
           networks:
             - default
+          labels:
+            traefik.enable: false
 
+        # Traefik is a reverse proxy that automatically creates and manages certificates.
         traefik:
           image: traefik:latest
           container_name: infrastructure_traefik
           restart: unless-stopped
           healthcheck:
-            disable: true
+            disable: '{{ disable_healthcheck }}'
           logging:
             driver: none
           ports:
-            - 80:80/tcp
-            - 443:443/tcp
+            - 80:80
+            - 443:443
+            - 853:853
           volumes:
             - '{{ docker_path }}/traefik:/etc/traefik'
             - '{{ docker_path }}/traefik/certificates:/certs'
-            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - '{{ docker_socket }}:/var/run/docker.sock:ro'
           networks:
             - default
           labels:
-            # General configuration
-            traefik.enable: true
-            # Http configuration
-            traefik.http.routers.traefik-http.entrypoints: web
-            traefik.http.routers.traefik-http.rule: Host(`{{ traefik_host }}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
-            traefik.http.routers.traefik-http.middlewares: traefik-https
-            traefik.http.middlewares.traefik-https.redirectscheme.scheme: https
-            # Https configuration
             traefik.http.routers.traefik.entrypoints: websecure
             traefik.http.routers.traefik.rule: Host(`{{ traefik_host }}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
             traefik.http.routers.traefik.service: api@internal
-            traefik.http.routers.traefik.tls: true
+
+        # Homepage is a highly customizable application dashboard.
+        homepage:
+          image: ghcr.io/gethomepage/homepage:latest
+          container_name: infrastructure_homepage
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          logging:
+            driver: none
+          volumes:
+            - '{{ docker_path }}/homepage/config:/app/config'
+            - '{{ docker_path }}/homepage/config/images:/app/public/images'
+            - '{{ docker_socket }}:/var/run/docker.sock:ro'
+          networks:
+            - default
+          labels:
+            traefik.http.routers.homepage.entrypoints: websecure
+            traefik.http.routers.homepage.rule: Host(`{{ homepage_host }}`)
+
+        # AdGuard Home is a network-wide dns service for blocking ads & tracking
+        adguardhome:
+          image: adguard/adguardhome:latest
+          container_name: infrastructure_adguardhome
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          logging:
+            driver: none
+          ports:
+            - 53:53/tcp
+            - 53:53/udp
+          volumes:
+            - '{{ docker_path }}/adguard/conf:/opt/adguardhome/conf'
+            - '{{ docker_path }}/adguard/work:/opt/adguardhome/work'
+            - '{{ docker_path }}/adguard/certificates:/opt/adguardhome/certificates'
+          networks:
+            - default
+          labels:
+            traefik.docker.network: default
+            traefik.http.routers.adguard.entrypoints: websecure
+            traefik.http.routers.adguard.rule: Host(`{{ adguard_host }}`)
+            traefik.http.routers.adguard.service: adguard
+            traefik.http.services.adguard.loadbalancer.server.port: 3000
+            traefik.tcp.routers.adguard-tls.entrypoints: dns_tls
+            traefik.tcp.routers.adguard-tls.rule: HostSNI(`{{ adguard_host }}`)
+            traefik.tcp.routers.adguard-tls.tls: true
+            traefik.tcp.routers.adguard-tls.service: adguard-tls
+            traefik.tcp.services.adguard-tls.loadbalancer.server.port: 53
 
       networks:
         default:
