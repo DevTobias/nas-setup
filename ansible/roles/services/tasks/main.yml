@@ -12,7 +12,9 @@
           healthcheck:
             disable: true
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           volumes:
             - '{{ docker_path }}/jellyfin/config:/config'
             - '{{ docker_path }}/jellyfin/cache:/cache'
@@ -48,7 +50,9 @@
           healthcheck:
             disable: true
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           networks:
             - infrastructure_default
           volumes:
@@ -68,32 +72,6 @@
             traefik.http.routers.audiobookshelf.entrypoints: websecure
             traefik.http.routers.audiobookshelf.rule: Host(`{{ audiobookshelf_host }}`)
             traefik.http.routers.audiobookshelf.tls: true
-
-        # dash:
-        #   image: mauricenino/dashdot:latest
-        #   container_name: service_dash
-        #   restart: unless-stopped
-        #   privileged: true
-        #   healthcheck:
-        #     disable: true
-        #   logging:
-        #     driver: none
-        #   networks:
-        #     - infrastructure_default
-        #   volumes:
-        #     - '{{ docker_path }}/dash:/mnt/host:ro'
-        #   labels:
-        #     # General configuration
-        #     traefik.enable: true
-        #     # Http configuration
-        #     traefik.http.routers.dash-http.entrypoints: web
-        #     traefik.http.routers.dash-http.rule: Host(`{{ dash_host }}`)
-        #     traefik.http.routers.dash-http.middlewares: dash-https
-        #     traefik.http.middlewares.dash-https.redirectscheme.scheme: https
-        #     # Https configuration
-        #     traefik.http.routers.dash.entrypoints: websecure
-        #     traefik.http.routers.dash.rule: Host(`{{ dash_host }}`)
-        #     traefik.http.routers.dash.tls: true
 
       networks:
         infrastructure_default:

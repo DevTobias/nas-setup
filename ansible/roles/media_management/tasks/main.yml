@@ -12,7 +12,9 @@
           healthcheck:
             disable: true
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           environment:
             TZ: '{{ timezone }}'
           networks:
@@ -39,7 +41,9 @@
           healthcheck:
             disable: true
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           environment:
             TZ: '{{ timezone }}'
             PUID: 1000
@@ -69,7 +73,9 @@
           healthcheck:
             disable: true
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           environment:
             TZ: '{{ timezone }}'
             PUID: 1000
@@ -99,7 +105,9 @@
           healthcheck:
             disable: true
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           environment:
             TZ: '{{ timezone }}'
             PUID: 1000
@@ -128,7 +136,9 @@
           healthcheck:
             disable: true
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           environment:
             TZ: '{{ timezone }}'
             PUID: 1000

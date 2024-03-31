@@ -56,7 +56,9 @@
           healthcheck:
             disable: '{{ disable_healthcheck }}'
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           environment:
             TZ: '{{ timezone }}'
             WATCHTOWER_SCHEDULE: '{{ watchtower_schedule }}'
@@ -77,7 +79,9 @@
           healthcheck:
             disable: '{{ disable_healthcheck }}'
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           ports:
             - 80:80
             - 443:443
@@ -101,7 +105,9 @@
           healthcheck:
             disable: '{{ disable_healthcheck }}'
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           volumes:
             - '{{ docker_path }}/homepage/config:/app/config'
             - '{{ docker_path }}/homepage/config/images:/app/public/images'
@@ -120,7 +126,9 @@
           healthcheck:
             disable: '{{ disable_healthcheck }}'
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           ports:
             - 53:53/tcp
             - 53:53/udp

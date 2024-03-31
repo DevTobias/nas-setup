@@ -2,17 +2,15 @@
 # Global configuration
 ################################################################
 
-# Enable ping feature for docker health checks
-ping: {}
-
 global:
-  # Don't send telemetry data to traefik
   sendAnonymousUsage: false
 
 ################################################################
 # EntryPoints configuration
 ################################################################
 
+
+# Auto redirect HTTP to HTTPS and enable DNS over TLS
 entryPoints:
   web:
     address: :80
@@ -29,6 +27,8 @@ entryPoints:
   dns_tls:
     address: :853
 
+
+# External redirections for the Synology Dashboard
 http:
   routers:
     nas-redirect:

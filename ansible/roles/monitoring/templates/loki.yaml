@@ -1,28 +1,38 @@
 auth_enabled: false
 
 server:
+  # Traefik HTTP metrics
   http_listen_port: 3100
+  # Promtail logs
   grpc_listen_port: 9096
 
-common:
-  instance_addr: 127.0.0.1
-  path_prefix: /tmp/loki
-  storage:
-    filesystem:
-      chunks_directory: /tmp/loki/chunks
-      rules_directory: /tmp/loki/rules
-  replication_factor: 1
-  ring:
-    kvstore:
-      store: inmemory
+# Ingester writes incoming series to long-term storage
+ingester:
+  wal:
+    dir: /tmp/wal
+  lifecycler:
+    # IP address to advertise in the ring.
+    address: 127.0.0.1
+    # Duration to sleep for before exiting, to ensure metrics are scraped.
+    final_sleep: 0s
+    ring:
+      # Backend storage to use for the ring.
+      kvstore:
+        store: inmemory
+      # The number of ingesters to write to and read from.
+      replication_factor: 1
+  # Any chunk not receiving new logs in this time will be flushed
+  chunk_idle_period: 1h
+  # All chunks will be flushed when they hit this age, default is 1h
+  max_chunk_age: 1h
+  # Loki will attempt to build chunks up to 1.5MB, flushing first if chunk_idle_period or max_chunk_age is reached first
+  chunk_target_size: 1048576
+  # Must be greater than index read cache TTL if using an index cache (Default index read cache TTL is 5m)
+  chunk_retain_period: 30s
+  # Chunk transfers disabled
+  max_transfer_retries: 0
 
-query_range:
-  results_cache:
-    cache:
-      embedded_cache:
-        enabled: true
-        max_size_mb: 100
-
+# Configures the chunk index schema and where it is stored
 schema_config:
   configs:
     - from: 2020-10-24
@@ -33,12 +43,41 @@ schema_config:
         prefix: index_
         period: 24h
 
+# Configures one of many possible stores for both the index and chunks
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /etc/loki/boltdb-shipper-active
+    cache_location: /etc/loki/boltdb-shipper-cache
+    cache_ttl: 24h
+    shared_store: filesystem
+  filesystem:
+    directory: /etc/loki/chunks
+
+# Compacts index shards for performance
+compactor:
+  working_directory: /etc/loki/boltdb-shipper-compactor
+  shared_store: filesystem
+
+# Configures global and per-tenant limits in Loki
+limits_config:
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+
+# Configures how chunks will be cached and how long to wait before saving them to the backing store
+chunk_store_config:
+  max_look_back_period: 0s
+
+# Configures the table manager for retention.
+table_manager:
+  retention_deletes_enabled: false
+  retention_period: 0s
+
 ruler:
   storage:
     type: local
     local:
-      directory: /loki/rules
-  rule_path: /loki/rules-temp
+      directory: /etc/loki/rules
+  rule_path: /etc/loki/rules-temp
   alertmanager_url: http://localhost:9093
   ring:
     kvstore:

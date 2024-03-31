@@ -3,23 +3,28 @@
     path: '{{ item }}'
     state: directory
   loop:
-    - '{{ docker_path }}/loki'
-    - '{{ docker_path }}/promtail'
+    - '{{ docker_path }}/loki/data'
+    - '{{ docker_path }}/loki/settings'
+    - '{{ docker_path }}/promtail/settings'
+    - '{{ docker_path }}/grafana/data'
+    - '{{ docker_path }}/grafana/settings'
 
 - name: Copy monitoring template files
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: '{{ item.src }}'
     dest: '{{ item.dest }}'
   loop:
-    - src: loki.yaml
-      dest: '{{ docker_path }}/loki/local-config.yaml'
-    - src: promtail.yaml
-      dest: '{{ docker_path }}/promtail/config.yml'
+    - src: 'templates/loki.yaml'
+      dest: '{{ docker_path }}/loki/settings/loki-config.yml'
+    - src: 'templates/promtail.yaml'
+      dest: '{{ docker_path }}/promtail/settings/promtail-config.yaml'
+    - src: 'templates/grafana/'
+      dest: '{{ docker_path }}/grafana/settings/'
 
 - name: Install Grafana Loki logging driver for docker
   community.docker.docker_plugin:
     plugin_name: grafana/loki-docker-driver
-    state: present
+    state: enable
     alias: loki
 
 - name: Deploy docker monitoring
@@ -29,25 +34,29 @@
     definition:
       version: '3'
       services:
+        # Loki is a horizontally-scalable, highly-available log aggregation system inspired by Prometheus.
         loki:
           image: grafana/loki:latest
-          container_name: monitoring_homepage
+          container_name: monitoring_loki
+          user: '0:0'
           restart: unless-stopped
           healthcheck:
             disable: '{{ disable_healthcheck }}'
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           volumes:
-            - '{{ docker_path }}/loki:/etc/loki'
-          expose:
-            - 3100
+            - '{{ docker_path }}/loki/data:/etc/loki'
+            - '{{ docker_path }}/loki/settings/loki-config.yml:/mnt/config/loki-config.yml'
           networks:
             - default
-          command: -config.file=/etc/loki/local-config.yaml
+          command: -config.file=/mnt/config/loki-config.yml
           labels:
             traefik.http.routers.loki.entrypoints: websecure
             traefik.http.routers.loki.rule: Host(`{{ monitoring_hosts.loki }}`)
 
+        # Promtail is an agent which ships the contents of local logs to a private Loki instance.
         promtail:
           image: grafana/promtail:latest
           container_name: monitoring_promtail
@@ -55,13 +64,38 @@
           healthcheck:
             disable: '{{ disable_healthcheck }}'
           logging:
-            driver: none
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
           volumes:
-            - '{{ docker_path }}/promtail:/etc/promtail'
+            - '{{ docker_path }}/promtail/settings/promtail-config.yaml:/mnt/config/promtail-config.yaml'
+            - '{{ docker_socket }}:/var/run/docker.sock'
             - /var/log:/var/log
+            - /var/lib/docker/containers:/var/lib/docker/containers
           networks:
             - default
-          command: -config.file=/etc/promtail/config.yml
+          command: -config.file=/mnt/config/promtail-config.yaml
+
+        # Grafana is a open-source analytics and monitoring solution.
+        grafana:
+          image: grafana/grafana:latest
+          container_name: monitoring_grafana
+          user: '0:0'
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          logging:
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
+          volumes:
+            - '{{ docker_path }}/grafana/data:/var/lib/grafana'
+            - '{{ docker_path }}/grafana/settings:/etc/grafana/provisioning/'
+          networks:
+            - default
+          labels:
+            traefik.http.routers.grafana.entrypoints: websecure
+            traefik.http.routers.grafana.rule: Host(`{{ monitoring_hosts.grafana }}`)
 
       networks:
         infrastructure_default:
