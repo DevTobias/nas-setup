@@ -12,10 +12,14 @@
       tags:
         - monitoring
 
-    - role: services
+    - role: media
       tags:
-        - services
+        - media
 
-    - role: media_management
+    - role: downloads
       tags:
-        - media_management
+        - downloads
+
+    - role: media_tools
+      tags:
+        - media_tools

@@ -1,0 +1,84 @@
+- name: Ensure media tools directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+  loop:
+    - '{{ docker_path }}/sonarr/config'
+    - '{{ docker_path }}/radarr/config'
+    - '{{ docker_path }}/prowlarr'
+
+- name: Deploy docker media tools
+  docker_compose:
+    project_name: media_tools
+    remove_orphans: true
+    definition:
+      version: '3'
+      services:
+        # Sonarr is a PVR for Usenet and BitTorrent users.
+        sonarr:
+          image: lscr.io/linuxserver/sonarr:latest
+          container_name: media_tools_sonarr
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          logging:
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
+          environment:
+            TZ: '{{ timezone }}'
+          volumes:
+            - '{{ docker_path }}/sonarr/config:/config'
+            - '{{ media_path }}:/media'
+          networks:
+            - infrastructure_default
+          labels:
+            traefik.http.routers.sonarr.entrypoints: websecure
+            traefik.http.routers.sonarr.rule: Host(`{{ media_tools_hosts.sonarr }}`)
+
+        # Radarr is a movie collection manager for Usenet and BitTorrent users.
+        radarr:
+          image: lscr.io/linuxserver/radarr:latest
+          container_name: media_tools_radarr
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          logging:
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
+          environment:
+            TZ: '{{ timezone }}'
+          volumes:
+            - '{{ docker_path }}/radarr/config:/config'
+            - '{{ media_path }}:/media'
+          networks:
+            - infrastructure_default
+          labels:
+            traefik.http.routers.radarr.entrypoints: websecure
+            traefik.http.routers.radarr.rule: Host(`{{ media_tools_hosts.radarr }}`)
+
+        # Prowlarr is a newsgroup indexer.
+        prowlarr:
+          image: lscr.io/linuxserver/prowlarr:latest
+          container_name: media_tools_prowlarr
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          logging:
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
+          environment:
+            TZ: '{{ timezone }}'
+          volumes:
+            - '{{ docker_path }}/prowlarr:/config'
+          networks:
+            - infrastructure_default
+          labels:
+            traefik.http.routers.prowlarr.entrypoints: websecure
+            traefik.http.routers.prowlarr.rule: Host(`{{ media_tools_hosts.prowlarr }}`)
+
+      networks:
+        infrastructure_default:
+          external: true

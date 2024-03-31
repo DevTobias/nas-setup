@@ -1,36 +1,36 @@
 - Media:
     - Jellyfin:
         icon: si-jellyfin
-        href: "https://{{ jellyfin_host }}"
+        href: "https://{{ media_hosts.jellyfin }}"
         description: Watch movies and TV shows.
-        siteMonitor: "https://{{ jellyfin_host }}"
+        siteMonitor: "https://{{ media_hosts.jellyfin }}"
         container: service_jellyfin
         widget:
           type: jellyfin
-          url: "https://{{ jellyfin_host }}"
+          url: "https://{{ media_hosts.jellyfin }}"
           key: "{{ jellyfin_key }}"
           enableNowPlaying: true
     - 'Audio Bookshelf':
         icon: si-audible
-        href: "https://{{ audiobookshelf_host }}"
+        href: "https://{{ media_hosts.audiobookshelf }}"
         description: Listen to Podcasts or Audiobooks.
-        siteMonitor: "https://{{ audiobookshelf_host }}"
+        siteMonitor: "https://{{ media_hosts.audiobookshelf }}"
         container: service_audiobookshelf
         widget:
           type: audiobookshelf
-          url: "https://{{ audiobookshelf_host }}"
+          url: "https://{{ media_hosts.audiobookshelf }}"
           key: "{{ audiobookshelf_key }}"
 
 - MediaManagement:
     - Sonarr:
         icon: si-sonarr
-        href: "https://{{ sonarr_host }}"
+        href: "https://{{ media_tools_hosts.sonarr }}"
         description: Request and manage TV shows.
-        siteMonitor: "https://{{ sonarr_host }}"
+        siteMonitor: "https://{{ media_tools_hosts.sonarr }}"
         container: media_management_sonarr
         widget:
           type: sonarr
-          url: "https://{{ sonarr_host }}"
+          url: "https://{{ media_tools_hosts.sonarr }}"
           key: "{{ sonarr_key }}"
 
 - Management:

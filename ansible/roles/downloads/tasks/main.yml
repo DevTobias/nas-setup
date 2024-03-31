@@ -1,0 +1,43 @@
+- name: Ensure downloads directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+  loop:
+    - '{{ docker_path }}/sabnzbd/config'
+    - '{{ docker_path }}/sabnzbd/downloads'
+    - '{{ docker_path }}/sabnzbd/incomplete'
+
+- name: Deploy docker download services
+  docker_compose:
+    project_name: downloads
+    remove_orphans: true
+    definition:
+      version: '3'
+      services:
+        # SABnzbd is a binary newsreader.
+        sabnzbd:
+          image: lscr.io/linuxserver/sabnzbd:latest
+          container_name: downloads_sabnzbd
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          logging:
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
+          environment:
+            TZ: '{{ timezone }}'
+          volumes:
+            - '{{ docker_path }}/sabnzbd/config:/config'
+            - '{{ docker_path }}/sabnzbd/downloads:/downloads'
+            - '{{ docker_path }}/sabnzbd/incomplete:/incomplete-downloads'
+            - '{{ media_path }}:/media'
+          networks:
+            - infrastructure_default
+          labels:
+            traefik.http.routers.sabnzbd.entrypoints: websecure
+            traefik.http.routers.sabnzbd.rule: Host(`{{ downloads_hosts.sabnzbd }}`)
+
+      networks:
+        infrastructure_default:
+          external: true

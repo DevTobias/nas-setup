@@ -1,0 +1,90 @@
+- name: Ensure media directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+  loop:
+    - '{{ docker_path }}/jellyfin/config'
+    - '{{ docker_path }}/jellyfin/cache/images'
+    - '{{ docker_path }}/audiobookshelf/config'
+    - '{{ docker_path }}/audiobookshelf/metadata'
+    - '{{ docker_path }}/jellyseerr/config'
+
+- name: Deploy docker media services
+  docker_compose:
+    project_name: media
+    remove_orphans: true
+    definition:
+      version: '3'
+      services:
+        # Jellyseerr is a web-based media manager.
+        jellyseerr:
+          image: fallenbagel/jellyseerr:latest
+          container_name: media_jellyseerr
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          logging:
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
+          environment:
+            TZ: '{{ timezone }}'
+          volumes:
+            - '{{ docker_path }}/jellyseerr/config:/app/config'
+          networks:
+            - infrastructure_default
+          labels:
+            traefik.http.routers.jellyseerr.entrypoints: websecure
+            traefik.http.routers.jellyseerr.rule: Host(`{{ media_hosts.jellyseerr }}`)
+
+        # Jellyfin is a media server.
+        jellyfin:
+          image: jellyfin/jellyfin:latest
+          container_name: media_jellyfin
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          ports:
+            - 7359:7359/udp
+            - 1900:1900/udp
+          logging:
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
+          environment:
+            TZ: '{{ timezone }}'
+          volumes:
+            - '{{ docker_path }}/jellyfin/config:/config'
+            - '{{ docker_path }}/jellyfin/cache:/cache'
+            - '{{ media_path }}:/media'
+          networks:
+            - infrastructure_default
+          labels:
+            traefik.http.routers.jellyfin.entrypoints: websecure
+            traefik.http.routers.jellyfin.rule: Host(`{{ media_hosts.jellyfin }}`)
+
+        # Audiobookshelf is a web-based audiobook player.
+        audiobookshelf:
+          image: ghcr.io/advplyr/audiobookshelf:latest
+          container_name: media_audiobookshelf
+          restart: unless-stopped
+          healthcheck:
+            disable: '{{ disable_healthcheck }}'
+          logging:
+            driver: loki
+            options:
+              loki-url: 'https://{{ monitoring_hosts.loki }}/loki/api/v1/push'
+          volumes:
+            - '{{ media_path }}/audiobooks:/audiobooks'
+            - '{{ media_path }}/podcasts:/podcasts'
+            - '{{ docker_path }}/audiobookshelf/config:/config'
+            - '{{ docker_path }}/audiobookshelf/metadata:/metadata'
+          networks:
+            - infrastructure_default
+          labels:
+            traefik.http.routers.audiobookshelf.entrypoints: websecure
+            traefik.http.routers.audiobookshelf.rule: Host(`{{ media_hosts.audiobookshelf }}`)
+
+      networks:
+        infrastructure_default:
+          external: true
