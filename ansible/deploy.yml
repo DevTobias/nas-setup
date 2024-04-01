@@ -8,18 +8,18 @@
       tags:
         - infrastructure
 
-    - role: monitoring
-      tags:
-        - monitoring
+    #- role: monitoring
+    #  tags:
+    #    - monitoring
 
-    - role: media
-      tags:
-        - media
+    #- role: media
+    #  tags:
+    #    - media
 
-    - role: downloads
-      tags:
-        - downloads
+    #- role: downloads
+    #  tags:
+    #    - downloads
 
-    - role: media_tools
-      tags:
-        - media_tools
+    #- role: media_tools
+    #  tags:
+    #    - media_tools

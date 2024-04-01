@@ -62,6 +62,7 @@
           labels:
             traefik.http.routers.jellyfin.entrypoints: websecure
             traefik.http.routers.jellyfin.rule: Host(`{{ media_hosts.jellyfin }}`)
+            traefik.http.services.jellyfin.loadbalancer.server.port: 8096
 
         # Audiobookshelf is a web-based audiobook player.
         audiobookshelf:

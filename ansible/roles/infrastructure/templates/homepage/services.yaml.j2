@@ -45,6 +45,17 @@
           username: "{{ nas_username }}"
           password: "{{ nas_password }}"
           volume: volume_1
+    - Grafana:
+        icon: si-grafana
+        href: "https://{{ monitoring_hosts.grafana }}"
+        description: Monitor your services.
+        siteMonitor: "https://{{ monitoring_hosts.grafana }}"
+        container: monitoring_grafana
+        widget:
+          type: grafana
+          url: "https://{{ monitoring_hosts.grafana }}"
+          username: "{{ grafana.username }}"
+          password: "{{ grafana.password }}"
     - Adguard:
         icon: si-adguard
         href: "https://{{ adguard_host }}"

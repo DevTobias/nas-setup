@@ -1,23 +1,13 @@
-- add adguard dns server
-
 - new dashboard with relevant integrations
-- remove unused services (kavita, audiobookshelf, bitwarden)
 - add readarr for book management with indexer
   - integrate with calibre
   - integrate with kindle
-- update system & docker services
-- clean folder / config structure
-
-- https://grafana.com/docs/loki/latest/send-data/docker-driver/
-
-
+- add movie / tv show tracker
+- check if something like uptime kuma would be cool
+- validate self hosted note taking tools
 
 https://www.reddit.com/r/selfhosted/comments/11ydgv2/my_homepage_and_grafana_dashboards/
 https://github.com/gethomepage/homepage/discussions/2688
 https://www.youtube.com/watch?v=h_GGd7HfKQ8
 https://www.youtube.com/watch?v=9TJx7QTrTyo&t=1239s
 https://raw.githubusercontent.com/grafana/loki/v2.9.4/production/docker-compose.yaml
-
-
-Plans for tomorrow:
-- create grafana monitoring dashboard with prometheus and loki -> own stack for monitoring
